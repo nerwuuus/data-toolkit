@@ -4,25 +4,11 @@ A collection of practical SQL, Python (Pandas), and R scripts for data transform
 
 ## Repository Structure
 
-```
+```text
 data-toolkit/
-│
 ├── sql/
-│   ├── transformations/
-│   ├── validation/
-│   └── reporting/
-│
 ├── python/
-│   ├── pandas/
-│   ├── validation/
-│   ├── transformations/
-│   └── automation/
-│
 ├── r/
-│   ├── cleaning/
-│   ├── transformations/
-│   └── visualization/
-│
 └── README.md
 ```
 
