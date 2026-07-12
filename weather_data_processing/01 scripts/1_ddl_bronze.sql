@@ -31,5 +31,5 @@ CREATE TABLE stations_bronze (
     station_name VARCHAR(100),
     gsn_flag VARCHAR(3),
     hcn_flag VARCHAR(3),
-    wmo_id VARCHAR(5)
+    wmo_id NUMERIC(6,1)
 );

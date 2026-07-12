@@ -47,7 +47,7 @@ try:
 
     print(f"Starting COPY for {stations_table}...")
     with open(
-        r"C:\Users\zychl\Desktop\Data Engineering\weather_data_processing\00 raw\ghcnd-stations.csv",
+        r"C:\Users\zychl\Desktop\Data Engineering\weather_data_processing\00 raw\ghcnd-stations_clean.csv",
         "r",
         encoding="utf-8"
     ) as file:
