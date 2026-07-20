@@ -29,7 +29,8 @@ CREATE VIEW gold.weather_observations AS
         w.value
     FROM silver.weather AS w
     LEFT JOIN silver.stations AS s
-        ON w.station = s.station;
+        ON w.station = s.station
+    WHERE w.station LIKE 'PL%';
 
 -- -- Data quality check:
 -- -- Verify that all weather stations have matching station metadata.
