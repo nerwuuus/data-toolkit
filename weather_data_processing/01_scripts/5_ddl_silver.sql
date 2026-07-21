@@ -14,7 +14,7 @@ CREATE TABLE silver.weather (
     station VARCHAR(11),
     observation_date DATE,
     metric VARCHAR(4),
-    value NUMERIC(6,1),
+    value NUMERIC(5,1),
     insert_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
