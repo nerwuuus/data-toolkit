@@ -1,6 +1,6 @@
 /*
 ==============================================================================
-DDL Script: Create Gold Views
+DDL Script: Create Gold View(s)
 ==============================================================================
 Script Purpose:
     This script creates views for the Gold layer of the weather data pipeline.
@@ -9,6 +9,9 @@ Script Purpose:
     layer. These views combine weather observations with station metadata
     to provide clean and enriched data for reporting, visualization,
     and further analysis.
+
+    The data is filtered to include only weather stations located in Poland
+    (station IDs starting with 'PL').
 
 Usage:
     Query these views directly from Python, Polars, Pandas, Power BI,

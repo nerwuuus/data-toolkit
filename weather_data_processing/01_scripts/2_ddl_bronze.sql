@@ -1,10 +1,10 @@
 /*
 ============================================================================
-DDL Bronze Script: Create Raw Data Table
+DDL Bronze Script: Create Raw Data Tables
 ============================================================================
 Script Purpose:
-  This script creates table dropping existing table
-  if it already exists.
+  This script creates tables, dropping existing tables if they 
+  already exist.
 Run this script to redefine the Bronze DDL structure.
 ============================================================================
 */
