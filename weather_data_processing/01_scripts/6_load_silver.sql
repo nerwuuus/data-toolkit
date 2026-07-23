@@ -30,14 +30,13 @@ BEGIN
         observation_date,
         metric,
         -- NOAA temperature observations are stored as integers representing
-        -- tenths of degrees Celsius (e.g. 221 = 22.1°C).
-        -- Divide by 10.0 to convert them to standard Celsius values.
+        -- tenths of a degree Celsius (e.g. 221 = 22.1°C).
+        -- Divide by 10 to convert them to degrees Celsius.
         CASE
-            WHEN metric IN ('TAVG', 'TMIN', 'TMAX', 'TOBS') THEN value / 10.0
+            WHEN metric IN ('TAVG', 'TMIN', 'TMAX') THEN value / 10.0
             ELSE value
         END AS value
-    FROM bronze.weather
-    WHERE station LIKE 'PL%';
+    FROM bronze.weather;
 
     -- Step 2: Truncate and load data into silver.stations table
     TRUNCATE TABLE silver.stations;
@@ -50,8 +49,7 @@ BEGIN
         TRIM(station) AS station,
         elevation,
         TRIM(INITCAP(station_name)) AS station_name -- Capitalize the first letter of each word
-    FROM bronze.stations
-    WHERE station LIKE 'PL%';
+    FROM bronze.stations;
 
     -- Final message
     RAISE NOTICE 'Silver tables have been successfully updated.';
