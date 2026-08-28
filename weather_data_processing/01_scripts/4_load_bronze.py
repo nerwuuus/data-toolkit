@@ -57,7 +57,7 @@ try:
     # Open the CSV file in read mode.
     # The file object will be used as the data source for COPY
     with open( 
-        r"C:\Users\zychl\Desktop\Data Engineering\weather_data_processing\00 raw\ghcnd-stations_clean.csv",
+        r"C:\Users\zychl\Desktop\Data Engineering\weather_data_processing\00_raw_data\stations.csv",
         "r",
         encoding="utf-8"
     ) as file:
@@ -85,7 +85,7 @@ try:
 
     print(f"Starting COPY for {weather_table}...")
     with open(
-        r"C:\Users\zychl\Desktop\Data Engineering\weather_data_processing\00 raw\weather.csv",
+        r"C:\Users\zychl\Desktop\Data Engineering\weather_data_processing\00_raw_data\weather.csv",
         "r",
         encoding="utf-8"
     ) as file:
