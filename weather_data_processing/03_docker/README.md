@@ -1,6 +1,6 @@
 # Docker Environment
 
-This directory contains the Docker configuration required to run the Weather Data Processing project.
+This directory contains the Docker configuration required to run the Weather Data Processing project. Docker ensures that the entire data processing environment (Python, PostgreSQL and dependencies) can be reproduced on any machine with a single command, eliminating configuration differences between development environments.
 
 ## Components
 
