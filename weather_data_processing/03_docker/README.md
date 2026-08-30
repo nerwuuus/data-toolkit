@@ -15,4 +15,10 @@ This directory contains the Docker configuration required to run the Weather Dat
 
 ```bash
 docker compose up
+```
+## End
+
+```bash
 docker compose down
+```
+
