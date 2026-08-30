@@ -1,5 +1,18 @@
-### Station data 
-https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.csv
+# Docker Environment
 
-### Weather data 
-https://www.ncei.noaa.gov/pub/data/ghcn/daily/by_year/
+This directory contains the Docker configuration required to run the Weather Data Processing project.
+
+## Components
+
+- Python
+- PostgreSQL
+- Pandas
+- Polars
+- PyArrow
+- psycopg2
+
+## Start
+
+```bash
+docker compose up
+docker compose down
