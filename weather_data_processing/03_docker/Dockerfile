@@ -5,5 +5,3 @@ WORKDIR /app
 COPY requirements.txt .
 
 RUN pip install -r requirements.txt
-
-docker build -f 03_docker/Dockerfile -t weather-python .
