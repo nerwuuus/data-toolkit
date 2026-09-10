@@ -3,7 +3,7 @@
 import psycopg2
 
 conn = psycopg2.connect(
-    host="localhost",
+    host="host.docker.internal",
     port=5433,
     dbname="analytics_db",
     user="postgres",
