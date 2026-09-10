@@ -13,10 +13,13 @@ conn = psycopg2.connect(
 cur = conn.cursor()
 print("Connected.")
 
+# Execute the SQL query. Doesn't print anything in the console.
 cur.execute(
     "SELECT * FROM test;"
 )
 
+# Fetch all rows from the query result and
+# display the result in the terminal
 rows = cur.fetchall()
 print(rows)
 
