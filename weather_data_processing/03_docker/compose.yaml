@@ -2,9 +2,9 @@ services:
   app:
     image: weather-python
     container_name: weather-app
-    working_dir: /app
+    working_dir: /app # Run commands from the mounted project directory inside the container.
     volumes:
-      -..:/app
+      - ..:/app
     command: python 01_scripts/docker_postgres_connection_test.py
     depends_on:
       - db

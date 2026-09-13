@@ -4,7 +4,7 @@ import psycopg2
 
 conn = psycopg2.connect(
     host="db",
-    port=5433,
+    port=5432,
     dbname="analytics_db",
     user="postgres",
     password="admin"
@@ -15,7 +15,7 @@ print("Connected.")
 
 # Execute the SQL query. Doesn't print anything in the console.
 cur.execute(
-    "SELECT * FROM test;"
+    "SELECT current_database();"
 )
 
 # Fetch all rows from the query result and
