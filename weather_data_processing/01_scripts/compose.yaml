@@ -9,8 +9,11 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      # PostgreSQL Docker image stores database files in this directory.
+      # Source: https://github.com/docker-library/docs/blob/master/postgres/content.md#pgdata
+      - weather-postgres-data:/var/lib/postgresql/data
 
 volumes:
-  postgres-data:
-    external: true
+  weather-postgres-data:
+    name: weather-postgres-data
+    
