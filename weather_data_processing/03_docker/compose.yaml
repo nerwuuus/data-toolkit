@@ -1,5 +1,5 @@
 services:
-  postgres:
+  db: # Service name. It can be anything
     image: postgres:17
     container_name: weather-postgres
     environment:
