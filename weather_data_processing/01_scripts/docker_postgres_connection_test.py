@@ -10,6 +10,8 @@ conn = psycopg2.connect(
     password="admin"
 )
 
+# Placeholder
+
 cur = conn.cursor()
 print("Connected.")
 

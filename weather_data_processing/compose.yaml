@@ -1,0 +1,29 @@
+services:
+  app:
+    image: weather-python
+    container_name: weather-app
+    working_dir: /app # Run commands from the mounted project directory inside the container.
+    volumes:
+      - .:/app
+    command: python 01_scripts/docker_postgres_connection_test.py
+    depends_on:
+      - db
+
+  db: # Service name. It can be anything
+    image: postgres:17
+    container_name: weather-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: analytics_db
+    ports:
+      - "5433:5432"
+    volumes:
+      # PostgreSQL Docker image stores database files in this directory.
+      # Source: https://github.com/docker-library/docs/blob/master/postgres/content.md#pgdata
+      - weather-postgres-data:/var/lib/postgresql/data
+
+volumes:
+  weather-postgres-data:
+    name: weather-postgres-data
+    
