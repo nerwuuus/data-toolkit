@@ -1,15 +1,18 @@
 services:
-  app:
-    image: weather-python
-    container_name: weather-app
-    working_dir: /app # Run commands from the mounted project directory inside the container.
+  app: # Service name. It can be anything.
+    build: # Build the image for the app service from a Dockerfile.
+      context: . # Use the project root as the build context.
+      dockerfile: 03_docker/Dockerfile
+    image: weather-python # Name assigned to the built app image.
+    container_name: weather-app # Custom name for the app container.
+    working_dir: /app # Run commands from this directory inside the container.
     volumes:
-      - .:/app
-    command: python 01_scripts/docker_postgres_connection_test.py
+      - .:/app # Mount the project root from the host into /app inside the container.
+    command: python 01_scripts/docker_postgres_connection_test.py # Run this py script when container runs.
     depends_on:
-      - db
+      - db # Start the db service before starting the app service.
 
-  db: # Service name. It can be anything
+  db: 
     image: postgres:17
     container_name: weather-postgres
     environment:
