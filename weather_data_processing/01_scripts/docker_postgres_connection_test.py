@@ -1,5 +1,5 @@
-# This script is a simple connection test between Python and PostgreSQL running in Docker.
-# It connects to the analytics_db database, queries the test table, and prints the result.
+# This script is a Docker Compose sanity check for the Python app and PostgreSQL database.
+# It connects to analytics_db, creates a test table, inserts sample data, reads it back, and prints the result.
 import psycopg2
 
 conn = psycopg2.connect(
