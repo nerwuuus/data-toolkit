@@ -14,7 +14,7 @@ DB_PORT = os.getenv('DB_PORT')
 
 conn = psycopg2.connect(
     host=DB_HOST,
-    port=int(DB_PORT), # Change string to number - .env returns string
+    port=int(DB_PORT), # Convert DB_PORT from string to integer.
     dbname=POSTGRES_DB,
     user=POSTGRES_USER,
     password=POSTGRES_PASSWORD
