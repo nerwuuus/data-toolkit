@@ -3,9 +3,10 @@ services:
     build: # Build the image for the app service from a Dockerfile.
       context: . # Use the project root as the build context.
       dockerfile: 03_docker/Dockerfile
-    # image: weather-python
     container_name: weather-app # Custom name for the app container.
     working_dir: /app # Run commands from this directory inside the container.
+    env_file:
+      - .env
     volumes:
       - .:/app # Mount the project root from the host into /app inside the container.
     command: python 01_scripts/docker_postgres_connection_test.py # Run this py script when container runs.
@@ -16,11 +17,11 @@ services:
     image: postgres:17
     container_name: weather-postgres
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: analytics_db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "5434:5432"
+      - "${HOST_POSTGRES_PORT}:${DB_PORT}"
     volumes:
       # PostgreSQL Docker image stores database files in this directory.
       # Source: https://github.com/docker-library/docs/blob/master/postgres/content.md#pgdata
