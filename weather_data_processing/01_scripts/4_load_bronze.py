@@ -21,6 +21,20 @@
 # Importing libraries
 import psycopg2
 import time
+import os
+
+# Read database configuration from environment variables.
+POSTGRES_USER = os.getenv('POSTGRES_USER')
+POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
+POSTGRES_DB = os.getenv('POSTGRES_DB')
+
+DB_HOST = os.getenv('DB_HOST')
+DB_PORT = os.getenv('DB_PORT')
+
+# Read input file paths from environment variables.
+DATA_DIR =  os.getenv('DATA_DIR')
+STATIONS_CSV = os.getenv('STATIONS_CSV')
+WEATHER_CSV = os.getenv('WEATHER_CSV')
 
 # Set the counter
 start_time = time.perf_counter()
@@ -37,14 +51,14 @@ conn = None
 # try block contains a code that might raise an error
 # If everything runs fine, the except block is skipped
 try: 
-    print("Connecting...")
     conn = psycopg2.connect( # Connecting to the PostgreSQL database
-        host="localhost", # Server
-        port=5432,
-        dbname="analytics_db",
-        user="postgres",
-        password="admin" # TO BE REMOVED
-    )
+    host=DB_HOST,
+    port=int(DB_PORT), # Convert DB_PORT from string to integer.
+    dbname=POSTGRES_DB,
+    user=POSTGRES_USER,
+    password=POSTGRES_PASSWORD
+)
+    
     cur = conn.cursor()  # Creates a cursor object used to execute SQL statements
     print("Connected.")
 
@@ -57,7 +71,7 @@ try:
     # Open the CSV file in read mode.
     # The file object will be used as the data source for COPY
     with open( 
-        r"C:\Users\zychl\Desktop\Data Engineering\weather_data_processing\00_raw_data\stations.csv",
+        STATIONS_CSV,
         "r",
         encoding="utf-8"
     ) as file:
@@ -85,7 +99,7 @@ try:
 
     print(f"Starting COPY for {weather_table}...")
     with open(
-        r"C:\Users\zychl\Desktop\Data Engineering\weather_data_processing\00_raw_data\weather.csv",
+        WEATHER_CSV,
         "r",
         encoding="utf-8"
     ) as file:
