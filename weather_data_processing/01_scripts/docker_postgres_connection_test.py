@@ -12,7 +12,6 @@ POSTGRES_DB = os.getenv('POSTGRES_DB')
 DB_HOST = os.getenv('DB_HOST')
 DB_PORT = os.getenv('DB_PORT')
 
-
 conn = psycopg2.connect(
     host=DB_HOST,
     port=int(DB_PORT), # Change string to number - .env returns string
