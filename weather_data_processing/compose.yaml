@@ -3,7 +3,7 @@ services:
     build: # Build the image for the app service from a Dockerfile.
       context: . # Use the project root as the build context.
       dockerfile: 03_docker/Dockerfile
-    image: weather-python # Name assigned to the built app image.
+    # image: weather-python
     container_name: weather-app # Custom name for the app container.
     working_dir: /app # Run commands from this directory inside the container.
     volumes:
