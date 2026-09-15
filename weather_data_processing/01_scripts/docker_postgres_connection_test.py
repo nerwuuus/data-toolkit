@@ -1,13 +1,24 @@
 # This script is a Docker Compose sanity check for the Python app and PostgreSQL database.
 # It connects to analytics_db, creates a test table, inserts sample data, reads it back, and prints the result.
+
+import os
 import psycopg2
 
+# Read database configuration from environment variables.
+POSTGRES_USER = os.getenv('POSTGRES_USER')
+POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
+POSTGRES_DB = os.getenv('POSTGRES_DB')
+
+DB_HOST = os.getenv('DB_HOST')
+DB_PORT = os.getenv('DB_PORT')
+
+
 conn = psycopg2.connect(
-    host="db",
-    port=5432,
-    dbname="analytics_db",
-    user="postgres",
-    password="admin"
+    host=DB_HOST,
+    port=int(DB_PORT), # Change string to number - .env returns string
+    dbname=POSTGRES_DB,
+    user=POSTGRES_USER,
+    password=POSTGRES_PASSWORD
 )
 
 cur = conn.cursor()
@@ -32,10 +43,10 @@ cur.execute("""
 
 conn.commit()
 
-cur.execute(""" \
-    "SELECT * " \
-    "FROM docker_test " \
-    "ORDER BY id;"
+cur.execute("""
+    SELECT *
+    FROM docker_test
+    ORDER BY id;
 """)
 
 # Fetch all rows from the query result and
