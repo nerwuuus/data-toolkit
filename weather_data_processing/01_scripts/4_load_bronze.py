@@ -2,12 +2,6 @@
 # This script is a Python ETL (Extract, Transform, Load) process using 
 # the psycopg2 library to interact with a PostgreSQL database.
 # ============================================================================
-# First time run:
-#   1) Open PowerShell and download psycopg2: pip install psycopg2.
-#   2) Run below scripts in PowerShell to prepare raw datasets:
-#       python "C:\Users\zychl\Desktop\Data Engineering\weather_data_processing\01_scripts\3a_prepare_weather_raw_data.ipynb"
-#       python "C:\Users\zychl\Desktop\Data Engineering\weather_data_processing\01_scripts\3b_prepare_stations_raw_data.ipynb"
-# ============================================================================
 # In short:
 #   try: Execute the main ETL process.
 #   except: Handle errors and undo changes with rollback().
