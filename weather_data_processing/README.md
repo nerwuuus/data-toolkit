@@ -123,8 +123,8 @@ The project uses environment variables stored in a local `.env` file.
 Example values:
 
 ```env
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=admin
+POSTGRES_USER=your_user_placeholder
+POSTGRES_PASSWORD=your_password_placeholder
 POSTGRES_DB=analytics_db
 
 DB_HOST=db
