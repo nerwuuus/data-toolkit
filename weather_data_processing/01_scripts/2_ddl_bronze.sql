@@ -18,7 +18,7 @@ CREATE TABLE bronze.weather (
     measurement_flag CHAR(1),
     quality_flag CHAR(1),
     source_flag CHAR(1),
-    observation_time VARCHAR(5)
+    observation_time VARCHAR(6)
 );
 
 DROP TABLE IF EXISTS bronze.stations;
