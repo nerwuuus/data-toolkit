@@ -57,6 +57,18 @@ services:
       psql -h db -p ${DB_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f 01_scripts/2_ddl_bronze.sql
       "
 
+  load-bronze:
+    image: weather-python
+    working_dir: /app
+    env_file:
+      - .env
+    depends_on:
+      init-db:
+        condition: service_completed_successfully
+    command: python 01_scripts/4_load_bronze.py
+    volumes:
+      - .:/app
+
 volumes:
   weather-postgres-data:
     name: weather-postgres-data
