@@ -2,3 +2,6 @@
 00_raw_data/
 02_plots/
 03_docker/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
