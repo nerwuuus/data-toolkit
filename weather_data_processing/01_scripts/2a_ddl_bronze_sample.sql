@@ -14,7 +14,7 @@ Script Purpose:
 */
 
 DROP TABLE IF EXISTS bronze.weather_sample;
-CREATE TABLE bronze.weather (
+CREATE TABLE bronze.weather_sample (
     station VARCHAR(11),
     observation_date DATE,
     metric VARCHAR(4),
@@ -26,7 +26,7 @@ CREATE TABLE bronze.weather (
 );
 
 DROP TABLE IF EXISTS bronze.stations_sample;
-CREATE TABLE bronze.stations (
+CREATE TABLE bronze.stations_sample (
     station VARCHAR(11),
     latitude NUMERIC(8,4),
     longitude NUMERIC(9,4),
