@@ -58,6 +58,9 @@ services:
       "
 
   load-bronze:
+    build:
+      context: .
+      dockerfile: 03_docker/Dockerfile
     image: weather-python
     working_dir: /app
     env_file:
