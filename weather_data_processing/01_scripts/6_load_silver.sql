@@ -11,8 +11,6 @@ Actions Performed:
 ============================================================================
 */
 
-CALL truncate_and_load_silver();
-
 CREATE OR REPLACE PROCEDURE truncate_and_load_silver()
 LANGUAGE plpgsql
 AS $$
@@ -55,3 +53,5 @@ BEGIN
     RAISE NOTICE 'Silver tables have been successfully updated.';
 END;
 $$;
+
+CALL truncate_and_load_silver();
