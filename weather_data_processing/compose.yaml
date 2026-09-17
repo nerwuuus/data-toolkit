@@ -55,6 +55,8 @@ services:
       psql -h db -p ${DB_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f 01_scripts/1_create_schemas.sql
       &&
       psql -h db -p ${DB_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f 01_scripts/2_ddl_bronze.sql
+      &&
+      psql -h db -p ${DB_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f 01_scripts/5_ddl_silver.sql
       "
 
   load-bronze:
@@ -71,6 +73,22 @@ services:
     command: python 01_scripts/4_load_bronze.py
     volumes:
       - .:/app
+
+  load-silver:
+    image: postgres:17
+    container_name: weather-load-silver
+    working_dir: /app
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - .:/app
+    depends_on:
+      load-bronze:
+        condition: service_completed_successfully
+    command: >
+      sh -c "
+      psql -h db -p ${DB_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f 01_scripts/6_load_silver.sql
+      "
 
 volumes:
   weather-postgres-data:
