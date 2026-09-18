@@ -1,33 +1,36 @@
-/*
-==============================================================================
-DDL Script: Create Gold View(s)
-==============================================================================
-Script Purpose:
-    This script creates views for the Gold layer of the weather data pipeline.
+/* 
+============================================================================== 
+DDL Script: Create Gold View
+============================================================================== 
+Script Purpose: 
+    This script creates view for the Gold layer of the weather data pipeline.
 
-    The Gold layer contains analytics-ready datasets built from the Silver
-    layer. These views combine weather observations with station metadata
-    to provide clean and enriched data for reporting, visualization,
-    and further analysis.
+    The Gold layer provides analysis-ready datasets built from the Silver layer.
+    In this project, the main Gold object is a view with weather observations
+    enriched with station metadata.
 
-    The data is filtered to include only weather stations located in Poland
-    (station IDs starting with 'PL').
+    The view is filtered to include only Polish weather stations
+    (station IDs starting with 'PL'), because the analytical part of this
+    project focuses on weather data from Poland.
 
-Usage:
-    Query these views directly from Python, Polars, Pandas, Power BI,
-    or other analytics tools.
-==============================================================================
+    This view does not physically store data. This keeps the Gold layer flexible:
+    when Silver data is refreshed, the view automatically reflects the latest
+    available data.
+
+    The view can be queried directly from SQL, Python, Pandas, Polars,
+    Power BI, or other analytics and visualization tools.
+============================================================================== 
 */
 
-DROP VIEW IF EXISTS gold.weather_observations CASCADE; 
+DROP VIEW IF EXISTS gold.poland_weather_observations; 
 
-CREATE VIEW gold.weather_observations AS
+CREATE VIEW gold.poland_weather_observations AS
     SELECT
         w.station,
         s.station_name,
         s.elevation,
         w.observation_date,
-        TO_CHAR(w.observation_date, 'MM-YYYY') AS month_year,
+        -- TO_CHAR(w.observation_date, 'MM-YYYY') AS month_year,
         w.metric,
         w.value
     FROM silver.weather AS w
@@ -40,4 +43,3 @@ CREATE VIEW gold.weather_observations AS
 -- SELECT COUNT(*)
 -- FROM gold.weather_observations
 -- WHERE station_name IS NULL;
-
