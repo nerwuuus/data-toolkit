@@ -11,7 +11,8 @@ services:
       - .:/app # Mount the project root from the host into /app inside the container.
     command: python 01_scripts/docker_postgres_connection_test.py # Run this py script when container runs.
     depends_on:
-      - db # Start the db service before starting the app service.
+      db:
+        condition: service_healthy # Start the db service before starting the app service.
 
   db: 
     image: postgres:17
