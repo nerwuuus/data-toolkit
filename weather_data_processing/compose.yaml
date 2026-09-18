@@ -58,6 +58,8 @@ services:
       psql -h db -p ${DB_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f 01_scripts/2_ddl_bronze.sql
       &&
       psql -h db -p ${DB_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f 01_scripts/5_ddl_silver.sql
+      &&
+      psql -h db -p ${DB_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f 01_scripts/7_ddl_gold.sql
       "
 
   load-bronze:
