@@ -8,3 +8,4 @@ pg8000==1.31.5
 matplotlib==3.11.1
 seaborn==0.13.2
 python-dotenv==1.2.3
+pyspark==4.2.0
