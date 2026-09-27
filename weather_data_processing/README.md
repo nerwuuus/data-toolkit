@@ -1,5 +1,18 @@
 # Weather Data Processing
 
+## Initial project scope
+
+The project originally started as a small ETL exercise focused on:
+
+- Loading public NOAA weather data into PostgreSQL
+- Processing the data with pandas
+- Creating simple weather variables
+- Performing basic data quality checks
+- Generating a few exploratory plots
+- Exporting the processed data to CSV
+
+The scope expanded over time as the project evolved into a broader Data Engineering learning environment, including large-scale Parquet processing, Polars Lazy, PySpark, SQL transformations and orchestration-related components.
+
 ## Overview
 
 Weather Data Processing is an end-to-end Data Engineering project built around the NOAA Global Historical Climatology Network Daily (GHCN-Daily) dataset.
