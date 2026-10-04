@@ -38,3 +38,40 @@ Usage:
 
 ==============================================================================
 */
+
+-- 1. Row count checks
+
+
+-- 2. NULL checks
+
+
+-- 3. Duplicate checks
+
+
+-- 4. Date range checks
+
+
+-- 5. Metric value range checks
+
+
+-- 6. Join coverage checks
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
