@@ -23,13 +23,15 @@ Purpose:
 */
 
 -- Duplicate check on the full bronze.weather table
+-- Baseline: 2 workers planned
+-- Runtime: ~45 minutes
+
 -- Query plan:
 -- - PostgreSQL reads the full bronze.weather table using a Parallel Seq Scan.
 -- - The data is sorted by station, observation_date, and metric.
 -- - 2 workers process parts of the aggregation in parallel.
 -- - PostgreSQL applies HAVING COUNT(*) > 1.
 -- - The query is very expensive because it scans, sorts, and groups the full raw dataset.
--- - This query takes around 45 minutes to complete.
 EXPLAIN
 SELECT
     station,
@@ -42,20 +44,23 @@ GROUP BY
     observation_date,
     metric
 HAVING COUNT(*) > 1;
+
 EXPLAIN
-    SELECT
-        station,
-        observation_date,
-        metric,
-        COUNT(*) AS duplicate_count
-    FROM bronze.weather
-    GROUP BY
-        station,
-        observation_date,
-        metric
-    HAVING COUNT(*) > 1;
-
-
+SELECT
+    station,
+    observation_date,
+    metric,
+    COUNT(*) AS duplicates
+FROM bronze.weather
+WHERE 
+    observation_date >= '2015-01-01' 
+    AND observation_date < '2016-01-01'
+GROUP BY
+    station,
+    observation_date,
+    metric
+HAVING COUNT(*) > 1
+ORDER BY duplicates DESC;
 
 
 

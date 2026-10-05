@@ -28,8 +28,29 @@ Purpose:
 ==============================================================================
 */
 
+-- Baseline:
+-- Filtering one year still uses a Parallel Seq Scan and takes a long time.
 
+-- Test an index on observation_date to improve date filtering.
+CREATE INDEX idx_weather_observation_date
+ON bronze.weather (observation_date);
 
+-- Check whether PostgreSQL uses the new index.
+EXPLAIN
+SELECT
+    station,
+    observation_date,
+    metric,
+    COUNT(*) AS duplicates
+FROM bronze.weather
+WHERE
+    observation_date >= '2015-01-01'
+    AND observation_date < '2016-01-01'
+GROUP BY
+    station,
+    observation_date,
+    metric
+HAVING COUNT(*) > 1;
 
 
 

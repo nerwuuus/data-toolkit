@@ -11,42 +11,31 @@ Script Purpose:
     produces complete, consistent, and reasonable analytical data.
 
     The script should be used to check:
-        - row counts in key tables and views,
-        - missing values in important columns,
-        - duplicate weather observations,
-        - expected date ranges,
-        - realistic ranges for weather metric values,
-        - station metadata coverage after joining observations with stations.
+        - Row counts in key tables and views
+        - Missing values in important columns
+        - Duplicate weather observations
+        - Expected date ranges
+        - Realistic ranges for weather metric values
+        - Station metadata coverage after joining observations with stations.
 
 Pipeline Layers:
     Bronze:
         Raw loaded data from source files.
 
     Silver:
-        Cleaned and standardized weather and station data.
+        Cleaned and standardised weather and station data.
 
     Gold:
-        Analysis-ready weather observations enriched with station metadata.
+        Analysis-ready weather observations joined with station metadata.
 
 Usage:
-    Run this script after the Bronze, Silver, and Gold layers have been created
-    and populated.
+    Run this script after the Bronze, Silver, and Gold layers have been created.
 
 ==============================================================================
 */
 
-
-/*
-==============================================================================
-Bronze layer quality checks
-==============================================================================
-*/
-SELECT *
-FROM bronze.weather
-LIMIT 10;
-
--- Duplicate checks. Expect one observation per station, date, and metric.
--- Result:
+-- Duplicate check on the full bronze.weather table.
+-- Expected result:
 -- No duplicate observations found for station, observation_date, and metric.
 SELECT
     station,
@@ -59,27 +48,28 @@ GROUP BY
     metric
 HAVING COUNT(*) > 1;
 
+-- Row count checks
+SELECT COUNT(*)
+FROM bronze.weather
+WHERE station IS NULL;
 
--- Count rows
-
--- 1. Row count checks
--- SELECT COUNT(*)
--- FROM bronze.weather
--- WHERE station IS NULL;
-
--- 2. NULL checks
-
-
--- 3. Duplicate checks
-
-
--- 4. Date range checks
+-- NULL checks
+-- Check for NULL station identifiers
+-- Expected result: 0
+SELECT COUNT(*)
+FROM bronze.weather
+WHERE station IS NULL;
 
 
--- 5. Metric value range checks
 
 
--- 6. Join coverage checks
+-- Date range checks
+
+
+-- Metric value range checks
+
+
+-- Join coverage checks
 
 
 
