@@ -46,6 +46,8 @@ FROM bronze.weather
 LIMIT 10;
 
 -- Duplicate checks. Expect one observation per station, date, and metric.
+-- Result:
+-- No duplicate observations found for station, observation_date, and metric.
 SELECT
     station,
     observation_date,
