@@ -45,26 +45,16 @@ SELECT *
 FROM bronze.weather
 LIMIT 10;
 
--- Duplicate checks
+-- Duplicate checks. Expect one observation per station, date, and metric.
 SELECT
     station,
     observation_date,
-    metric,
-    value,
-    measurement_flag,
-    quality_flag,
-    source_flag,
-    observation_time
+    metric
 FROM bronze.weather
 GROUP BY
     station,
     observation_date,
-    metric,
-    value,
-    measurement_flag,
-    quality_flag,
-    source_flag,
-    observation_time
+    metric
 HAVING COUNT(*) > 1;
 
 
