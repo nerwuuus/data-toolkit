@@ -18,10 +18,6 @@ Script Purpose:
         - realistic ranges for weather metric values,
         - station metadata coverage after joining observations with stations.
 
-    These checks can be run manually during development and may later be added
-    to Docker Compose as a separate data-quality service. In the future, they
-    can also be orchestrated with Airflow as part of the full pipeline.
-
 Pipeline Layers:
     Bronze:
         Raw loaded data from source files.
@@ -39,8 +35,45 @@ Usage:
 ==============================================================================
 */
 
--- 1. Row count checks
 
+/*
+==============================================================================
+Bronze layer quality checks
+==============================================================================
+*/
+SELECT *
+FROM bronze.weather
+LIMIT 10;
+
+-- Duplicate checks
+SELECT
+    station,
+    observation_date,
+    metric,
+    value,
+    measurement_flag,
+    quality_flag,
+    source_flag,
+    observation_time
+FROM bronze.weather
+GROUP BY
+    station,
+    observation_date,
+    metric,
+    value,
+    measurement_flag,
+    quality_flag,
+    source_flag,
+    observation_time
+HAVING COUNT(*) > 1;
+
+
+-- Count rows
+
+-- 1. Row count checks
+-- SELECT COUNT(*)
+-- FROM bronze.weather
+-- WHERE station IS NULL;
 
 -- 2. NULL checks
 
