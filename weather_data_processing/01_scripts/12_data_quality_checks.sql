@@ -34,9 +34,8 @@ Usage:
 ==============================================================================
 */
 
--- Duplicate check on the full bronze.weather table.
--- Expected result:
--- No duplicate observations found for station, observation_date, and metric.
+-- Duplicate check on the key observation columns in bronze.weather table.
+-- Expected result: No duplicates found.
 SELECT
     station,
     observation_date,
@@ -48,25 +47,33 @@ GROUP BY
     metric
 HAVING COUNT(*) > 1;
 
--- Row count checks
-SELECT COUNT(*)
-FROM bronze.weather
-WHERE station IS NULL;
 
--- NULL checks
--- Check for NULL station identifiers
+
+-- Check for missing values in key observation columns
 -- Expected result: 0
-SELECT COUNT(*)
+SELECT COUNT(*) AS null_count
 FROM bronze.weather
-WHERE station IS NULL;
-
+WHERE
+    station IS NULL
+    OR observation_date IS NULL
+    OR metric IS NULL;
 
 
 
 -- Date range checks
+-- Expected result:
+-- Minimum date: 2015-01-01
+-- Maximum date: 2026-07-16
+SELECT
+    MIN(observation_date) AS min_observation_date,
+    MAX(observation_date) AS max_observation_date
+FROM bronze.weather;
+
 
 
 -- Metric value range checks
+
+
 
 
 -- Join coverage checks

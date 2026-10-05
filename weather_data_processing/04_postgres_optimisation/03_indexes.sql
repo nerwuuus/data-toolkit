@@ -28,14 +28,18 @@ Purpose:
 ==============================================================================
 */
 
--- Baseline:
--- Filtering one year still uses a Parallel Seq Scan and takes a long time.
+-- Baseline
+-- Filtering one year uses a Parallel Seq Scan and takes a long time.
 
--- Test an index on observation_date to improve date filtering.
+-- Create an index on observation_date.
+-- Index creation time: ~7 minutes.
 CREATE INDEX idx_weather_observation_date
 ON bronze.weather (observation_date);
 
--- Check whether PostgreSQL uses the new index.
+-- Test 1: One-year filter
+-- Result:
+-- PostgreSQL still uses a Parallel Seq Scan.
+-- The index is not selected because the date range is too broad.
 EXPLAIN
 SELECT
     station,
@@ -52,6 +56,25 @@ GROUP BY
     metric
 HAVING COUNT(*) > 1;
 
+-- Test 2: One-month filter
+-- Result:
+-- PostgreSQL uses the observation_date index.
+-- The index becomes useful when the filter is selective enough.
+EXPLAIN
+SELECT
+    station,
+    observation_date,
+    metric,
+    COUNT(*) AS duplicates
+FROM bronze.weather
+WHERE
+    observation_date >= '2015-01-01'
+    AND observation_date < '2015-02-01'
+GROUP BY
+    station,
+    observation_date,
+    metric
+HAVING COUNT(*) > 1;
 
 
 
