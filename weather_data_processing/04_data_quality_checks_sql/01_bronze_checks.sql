@@ -1,38 +1,45 @@
 /*
 ==============================================================================
-Data Quality Script: Validate Weather Data Pipeline
+Data Quality Checks: Bronze Layer
 ==============================================================================
-
 Script Purpose:
-    This script contains data quality checks for the weather data pipeline.
-
-    The checks are intended to validate data across the Bronze, Silver, and Gold
-    layers and confirm that the pipeline not only runs successfully, but also
-    produces complete, consistent, and reasonable analytical data.
+    This script contains data quality checks for the Bronze layer of the
+    weather data pipeline.
+    The checks are intended to validate the raw loaded data and confirm that
+    the source data is complete, consistent, and suitable for further
+    processing.
 
     The script should be used to check:
-        - Row counts in key tables and views
-        - Missing values in important columns
+        - Row counts in Bronze tables
+        - Missing values in key Bronze layer columns
         - Duplicate weather observations
-        - Expected date ranges
-        - Realistic ranges for weather metric values
-        - Station metadata coverage after joining observations with stations.
+        - Expected observation date ranges
+        - Available weather metrics and their value ranges
 
-Pipeline Layers:
-    Bronze:
-        Raw loaded data from source files.
-
-    Silver:
-        Cleaned and standardised weather and station data.
-
-    Gold:
-        Analysis-ready weather observations joined with station metadata.
+Bronze Layer:
+    Raw weather and station data loaded from source files without analytical
+    transformations.
 
 Usage:
-    Run this script after the Bronze, Silver, and Gold layers have been created.
-
+    Run this script after the Bronze layer has been created and populated.
 ==============================================================================
 */
+
+-- Check row counts in Bronze tables
+-- Expected result: counts should match the number of records loaded from the source files.
+SELECT COUNT(*)
+FROM bronze.weather;
+
+SELECT COUNT(*)
+FROM bronze.stations;
+
+
+
+-- Missing values in key Bronze layer columns.
+
+
+
+
 
 -- Duplicate check on the key observation columns in bronze.weather table.
 -- Expected result: No duplicates found.
@@ -49,7 +56,7 @@ HAVING COUNT(*) > 1;
 
 
 
--- Check for missing values in key observation columns
+-- Check for missing values in key observation columns in bronze.weather table.
 -- Expected result: 0
 SELECT COUNT(*) AS null_count
 FROM bronze.weather
@@ -85,25 +92,3 @@ GROUP BY metric
 ORDER BY 
     metric_count DESC,
     metric;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
