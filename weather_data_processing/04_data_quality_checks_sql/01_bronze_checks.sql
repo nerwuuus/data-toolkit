@@ -36,12 +36,24 @@ FROM bronze.stations;
 
 
 -- Missing values in key Bronze layer columns.
+-- Count only the records where, e.g., station is NULL.
+-- Expected result: 0 NULL values in key columns.
+SELECT
+    COUNT(*) FILTER (WHERE station IS NULL) AS station_nulls,
+    COUNT(*) FILTER (WHERE observation_date IS NULL) AS observation_date_nulls,
+    COUNT(*) FILTER (WHERE metric IS NULL) AS metric_nulls,
+    COUNT(*) FILTER (WHERE value IS NULL) AS value_nulls
+FROM bronze.weather;
+
+SELECT
+    COUNT(*) FILTER (WHERE station IS NULL) AS station_nulls,
+    COUNT(*) FILTER (WHERE station_name IS NULL) AS station_name_nulls,
+    COUNT(*) FILTER (WHERE elevation IS NULL) AS elevation_nulls
+FROM bronze.stations;
+    
 
 
-
-
-
--- Duplicate check on the key observation columns in bronze.weather table.
+-- Duplicate check on the key observation columns.
 -- Expected result: No duplicates found.
 SELECT
     station,
@@ -54,17 +66,17 @@ GROUP BY
     metric
 HAVING COUNT(*) > 1;
 
+-- Duplicate checks on station identifiers and station names.
+-- Expected result: No duplicates found.
+SELECT station
+FROM bronze.stations
+GROUP BY station
+HAVING COUNT(*) > 1;
 
-
--- Check for missing values in key observation columns in bronze.weather table.
--- Expected result: 0
-SELECT COUNT(*) AS null_count
-FROM bronze.weather
-WHERE
-    station IS NULL
-    OR observation_date IS NULL
-    OR metric IS NULL;
-
+SELECT station_name
+FROM bronze.stations
+GROUP BY station_name
+HAVING COUNT(*) > 1;
 
 
 -- Date range checks
@@ -79,7 +91,7 @@ FROM bronze.weather;
 
 
 
--- Metric distribution and value range check
+-- Metric distribution and value range check in bronze.weather table.
 -- Review minimum, maximum, and value range for each weather metric.
 SELECT
     metric,
