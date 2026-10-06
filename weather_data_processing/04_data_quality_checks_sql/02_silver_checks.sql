@@ -26,8 +26,12 @@ Usage:
     Run this script after the Silver layer has been created and populated.
 ==============================================================================
 */
+SELECT *
+FROM silver.weather
+LIMIT 1000;
 
-
+SELECT *
+FROM silver.stations;
 
 
 

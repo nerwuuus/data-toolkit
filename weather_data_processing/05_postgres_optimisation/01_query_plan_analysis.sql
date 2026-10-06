@@ -61,12 +61,3 @@ GROUP BY
     metric
 HAVING COUNT(*) > 1
 ORDER BY duplicates DESC;
-
-
-
-
-
-
-
-
-

@@ -55,3 +55,17 @@ END;
 $$;
 
 CALL truncate_and_load_silver();
+
+
+
+-- Debug: check the actual data type and numeric precision of silver.weather.value
+-- Useful when PostgreSQL reports a numeric overflow error.
+SELECT
+    column_name,
+    data_type,
+    numeric_precision,
+    numeric_scale
+FROM information_schema.columns
+WHERE table_schema = 'silver'
+  AND table_name = 'weather'
+  AND column_name = 'value';
