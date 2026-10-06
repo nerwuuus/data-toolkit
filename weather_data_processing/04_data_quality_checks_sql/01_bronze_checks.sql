@@ -62,8 +62,9 @@ WHERE
 
 -- Date range checks
 -- Expected result:
--- Minimum date: 2015-01-01
--- Maximum date: 2026-07-16
+-- Minimum date: no earlier than 2015-01-01
+-- Maximum date: no later than 2026-07-16
+-- The maximum expected date will change with future NOAA updates.
 SELECT
     MIN(observation_date) AS min_observation_date,
     MAX(observation_date) AS max_observation_date
@@ -71,12 +72,21 @@ FROM bronze.weather;
 
 
 
--- Metric value range checks
+-- Metric distribution and value range check
+-- Review minimum, maximum, and value range for each weather metric.
+SELECT
+    metric,
+    COUNT(*) AS metric_count,
+    MIN(value) AS min_metric_value,
+    MAX(value) AS max_metric_value,
+    (MAX(value) - MIN(value)) AS metric_delta
+FROM bronze.weather
+GROUP BY metric
+ORDER BY 
+    metric_count DESC,
+    metric;
 
 
-
-
--- Join coverage checks
 
 
 
