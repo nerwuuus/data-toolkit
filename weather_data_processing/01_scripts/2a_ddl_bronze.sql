@@ -1,0 +1,35 @@
+/*
+============================================================================
+DDL Bronze Script: Create Raw Data Tables
+============================================================================
+Script Purpose:
+  This script creates tables, dropping existing tables if they 
+  already exist.
+Run this script to redefine the Bronze DDL structure.
+============================================================================
+*/
+
+DROP TABLE IF EXISTS bronze.weather;
+CREATE TABLE bronze.weather (
+    station VARCHAR(11),
+    observation_date DATE,
+    metric VARCHAR(4),
+    value INTEGER,
+    measurement_flag CHAR(1),
+    quality_flag CHAR(1),
+    source_flag CHAR(1),
+    observation_time VARCHAR(10)
+);
+
+DROP TABLE IF EXISTS bronze.stations;
+CREATE TABLE bronze.stations (
+    station VARCHAR(11),
+    latitude NUMERIC(8,4),
+    longitude NUMERIC(9,4),
+    elevation NUMERIC(6,1),
+    state VARCHAR(50),
+    station_name VARCHAR(100),
+    gsn_flag VARCHAR(3),
+    hcn_flag VARCHAR(3),
+    wmo_id NUMERIC(6,1)
+);
