@@ -86,8 +86,3 @@ ON silver.weather (station);
 EXPLAIN
 SELECT *
 FROM gold.weather_observations;
-
-
-
-
-
