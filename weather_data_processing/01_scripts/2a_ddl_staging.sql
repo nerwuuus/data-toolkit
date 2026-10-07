@@ -39,3 +39,11 @@ CREATE TABLE staging.stations (
     wmo_id NUMERIC(6,1),
     insert_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- SELECT topic_id, topic_date, topic_body
+-- FROM ${TARGET_SCHEMA_IMPORT}.tmp_topic src
+-- WHERE NOT EXISTS (
+--         SELECT *
+--         FROM ${TARGET_SCHEMA_FINAL}.topic nx
+--         WHERE nx.topic_id = src.topic_id
+--         );
