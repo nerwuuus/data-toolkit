@@ -78,6 +78,14 @@ HAVING COUNT(*) > 1;
 
 
 
+-- Create an index on station to test filtering by station prefix.
+CREATE INDEX idx_weather_observation_station
+ON silver.weather (station);
+
+-- Check whether PostgreSQL uses the index for the Gold view query.
+EXPLAIN
+SELECT *
+FROM gold.weather_observations;
 
 
 

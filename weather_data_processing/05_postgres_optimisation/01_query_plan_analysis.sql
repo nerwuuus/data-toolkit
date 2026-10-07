@@ -61,3 +61,17 @@ GROUP BY
     metric
 HAVING COUNT(*) > 1
 ORDER BY duplicates DESC;
+
+
+
+-- Gold weather observations view query plan.
+-- PostgreSQL uses a Parallel Seq Scan on silver.weather and filters rows
+-- with station LIKE 'PL%'.
+-- The filtered weather data is joined with silver.stations using
+-- a Parallel Hash Left Join.
+-- The main performance cost comes from scanning the large silver.weather table.
+-- Increasing the number of workers is unlikely to remove the main bottleneck,
+-- because the query still needs to scan a large part of the table.
+EXPLAIN
+SELECT *
+FROM gold.weather_observations;
