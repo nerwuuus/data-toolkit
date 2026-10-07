@@ -45,8 +45,12 @@ BEGIN
     )
     SELECT
         TRIM(station) AS station,
-        elevation,
-        TRIM(INITCAP(station_name)) AS station_name -- Capitalize the first letter of each word
+        CASE
+            WHEN elevation <= -999.9 THEN NULL
+            ELSE elevation
+        END AS elevation,
+    -- Capitalize the first letter of each word
+    TRIM(INITCAP(station_name)) AS station_name
     FROM bronze.stations;
 
     -- Final message
