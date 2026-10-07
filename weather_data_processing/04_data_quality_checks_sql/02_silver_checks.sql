@@ -27,16 +27,6 @@ Usage:
 ==============================================================================
 */
 
--- Check row counts in Silver tables
--- Expected result: counts should match the corresponding Bronze tables after transformation.
-SELECT COUNT(*)
-FROM silver.weather;
-
-SELECT COUNT(*)
-FROM silver.stations;
-
-
-
 -- Missing values in key Silver layer columns.
 -- Verify that Bronze-to-Silver transformations did not introduce unexpected NULL values.
 -- Expected result: 0 NULL values in key columns.
@@ -113,17 +103,67 @@ ORDER BY
 
 
 
--- - Consistency of cleaned station metadata
-        -- Czyli możesz sprawdzić, czy:
-        -- - station nie ma pustych stringów,
-        -- - station_name nie ma pustych stringów,
-        -- - nazwy nie mają dziwnych spacji na początku/końcu,
-        -- - elevation nie ma absurdalnych wartości albo nieoczekiwanych NULL-i.
+-- Consistency checks for cleaned station metadata
+-- Expected result: no rows returned for whitespace checks.
+SELECT station
+FROM silver.stations
+WHERE btrim(station) != station;
+
+SELECT station_name
+FROM silver.stations
+WHERE btrim(station_name) != station_name;
+
+
+
+-- Elevation data quality checks.
+-- Check for NULL values, NOAA missing-values (-999.9),
+-- and review the minimum and maximum elevation values.
+SELECT elevation
+FROM silver.stations
+WHERE elevation IS NULL;
+
+SELECT COUNT(*)
+FROM silver.stations
+WHERE elevation <= -999;
+
+SELECT
+    MIN(elevation) AS min_elevation,
+    MAX(elevation) AS max_elevation
+FROM silver.stations;
+
+
 
 -- Data completeness after Bronze-to-Silver transformations
-    -- → sprawdzasz, czy podczas transformacji nie zgubiłeś danych.
-        -- Najprościej:
-        -- - row count Bronze vs Silver,
-        -- - zakres dat Bronze vs Silver,
-        -- - liczba stacji Bronze vs Silver,
-        -- - lista metryk Bronze vs Silver.
+SELECT
+    (SELECT COUNT(*) FROM bronze.stations) AS bronze_station_count,
+    (SELECT COUNT(*) FROM silver.stations) AS silver_station_count;
+
+SELECT
+    (SELECT COUNT(*) FROM bronze.weather) AS bronze_weather_count,
+    (SELECT COUNT(*) FROM silver.weather) AS silver_weather_count;
+
+SELECT
+    EXTRACT(YEAR FROM observation_date) AS observation_year,
+    COUNT(*) AS row_count
+FROM bronze.weather
+GROUP BY EXTRACT(YEAR FROM observation_date)
+ORDER BY observation_year;
+
+SELECT
+    EXTRACT(YEAR FROM observation_date) AS observation_year,
+    COUNT(*) AS row_count
+FROM silver.weather
+GROUP BY EXTRACT(YEAR FROM observation_date)
+ORDER BY observation_year;
+
+SELECT 
+    metric,
+    COUNT(*) AS metric_count
+FROM bronze.weather
+GROUP BY metric;
+
+SELECT 
+    metric,
+    COUNT(*) AS metric_count
+FROM silver.weather
+GROUP BY metric;
