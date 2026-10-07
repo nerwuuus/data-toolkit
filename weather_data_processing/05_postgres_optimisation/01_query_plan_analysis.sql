@@ -65,10 +65,9 @@ ORDER BY duplicates DESC;
 
 
 -- Gold weather observations view query plan.
--- PostgreSQL uses a Parallel Seq Scan on silver.weather and filters rows
+-- PostgreSQL reads whole silver.weather (Parallel Seq Scan) and filters rows
 -- with station LIKE 'PL%'.
--- The filtered weather data is joined with silver.stations using
--- a Parallel Hash Left Join.
+-- The filtered weather data is joined with silver.stations.
 -- The main performance cost comes from scanning the large silver.weather table.
 -- Increasing the number of workers is unlikely to remove the main bottleneck,
 -- because the query still needs to scan a large part of the table.
