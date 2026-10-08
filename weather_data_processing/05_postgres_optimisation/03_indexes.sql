@@ -33,7 +33,7 @@ Purpose:
 
 -- Create an index on observation_date.
 -- Index creation time: ~7 minutes.
-CREATE INDEX idx_weather_observation_date
+CREATE INDEX IF NOT EXISTS idx_weather_observation_date
 ON bronze.weather (observation_date);
 
 -- Test 1: One-year filter
@@ -79,10 +79,15 @@ HAVING COUNT(*) > 1;
 
 
 -- Create an index on station to test filtering by station prefix.
-CREATE INDEX idx_weather_observation_station
+CREATE INDEX IF NOT EXISTS idx_weather_observation_station
 ON silver.weather (station);
 
 -- Check whether PostgreSQL uses the index for the Gold view query.
 EXPLAIN
 SELECT *
 FROM gold.weather_observations;
+-- Result:
+-- PostgreSQL still uses a Parallel Seq Scan on silver.weather.
+-- The station index is not selected for the LIKE 'PL%' filter.
+-- The planner estimates that scanning the table is cheaper than using
+-- the index for this relatively broad prefix filter.
