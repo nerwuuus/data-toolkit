@@ -15,7 +15,10 @@ CREATE TABLE silver.weather (
     observation_date DATE,
     metric VARCHAR(4),
     value NUMERIC(10,2),
-    insert_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    insert_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT uq_silver_weather_station_date_metric
+    UNIQUE (station, observation_date, metric)
 );
 
 DROP TABLE IF EXISTS silver.stations CASCADE;
@@ -23,5 +26,8 @@ CREATE TABLE silver.stations (
     station VARCHAR(55),
     elevation NUMERIC(10,2),
     station_name VARCHAR(100),
-    insert_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    insert_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT uq_silver_weather_station
+    UNIQUE (station)
 );
