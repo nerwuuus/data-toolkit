@@ -31,3 +31,4 @@ CREATE TABLE silver.stations (
     CONSTRAINT uq_silver_weather_station
     UNIQUE (station)
 );
+
