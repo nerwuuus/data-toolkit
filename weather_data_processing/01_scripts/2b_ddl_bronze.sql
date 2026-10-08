@@ -19,9 +19,12 @@ CREATE TABLE bronze.weather (
     quality_flag CHAR(1),
     source_flag CHAR(1),
     observation_time VARCHAR(10),
-    -- TODO: Add insert_date when the Bronze layer is rebuilt for incremental loading.
-    -- Keep commented for now to avoid reloading the full historical dataset.
-    -- insert_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    insert_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT uq_bronze_weather_station_date_metric
+    UNIQUE (
+        station, observation_date, metric
+    )
 );
 
 DROP TABLE IF EXISTS bronze.stations;
@@ -35,7 +38,8 @@ CREATE TABLE bronze.stations (
     gsn_flag VARCHAR(3),
     hcn_flag VARCHAR(3),
     wmo_id NUMERIC(6,1),
-    -- TODO: Add insert_date when the Bronze layer is rebuilt for incremental loading.
-    -- Keep commented for now to avoid reloading the full historical dataset.
-    -- insert_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    insert_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT uq_bronze_weather_station
+    UNIQUE (station)
 );
