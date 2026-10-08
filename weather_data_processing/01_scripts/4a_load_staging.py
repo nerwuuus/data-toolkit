@@ -16,11 +16,18 @@
 import psycopg2
 import time
 import os
+from pathlib import Path
+from dotenv import load_dotenv
+import traceback
+
+# Build the project path relative to this script and load .env.analysis
+BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR /'.env.analysis')
 
 # Read database configuration from environment variables.
-POSTGRES_USER = os.getenv('POSTGRES_USER')
-POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
-POSTGRES_DB = os.getenv('POSTGRES_DB')
+POSTGRES_USER = os.getenv('DB_USER')
+POSTGRES_PASSWORD = os.getenv('DB_PASSWORD')
+POSTGRES_DB = os.getenv('DB_NAME')
 
 DB_HOST = os.getenv('DB_HOST')
 DB_PORT = os.getenv('DB_PORT')
@@ -34,8 +41,8 @@ WEATHER_CSV = os.getenv('WEATHER_CSV')
 start_time = time.perf_counter()
 
 # Define table names where data will be truncated and loaded
-weather_table = "bronze.weather"
-stations_table = "bronze.stations"
+weather_table = "staging.weather"
+stations_table = "staging.stations"
 
 # Initialize database objects before the try block
 # They remain None if the connection cannot be established
@@ -74,7 +81,17 @@ try:
         # cur.copy_expert(sql_query, file)
         cur.copy_expert( 
             f"""
-            COPY {stations_table}
+            COPY {stations_table}  (
+                station,
+                latitude,
+                longitude,
+                elevation,
+                state,
+                station_name,
+                gsn_flag,
+                hcn_flag,
+                wmo_id
+            )
             FROM STDIN
             WITH (
                 FORMAT csv,
@@ -99,7 +116,16 @@ try:
     ) as file:
         cur.copy_expert(
             f"""
-            COPY {weather_table}
+            COPY {weather_table} (
+                station,
+                observation_date,
+                metric,
+                value,
+                measurement_flag,
+                quality_flag,
+                source_flag,
+                observation_time
+            )
             FROM STDIN
             WITH (
                 FORMAT csv,
@@ -129,6 +155,7 @@ except Exception as e:
     if conn is not None:
         conn.rollback()
     print("An error occurred during the data load process:", e)
+    traceback.print_exc()
 
 # Always close the cursor and database connection,
 # regardless of whether the ETL succeeded or failed
