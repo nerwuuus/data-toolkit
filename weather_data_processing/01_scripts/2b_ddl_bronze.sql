@@ -22,9 +22,7 @@ CREATE TABLE bronze.weather (
     insert_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT uq_bronze_weather_station_date_metric
-    UNIQUE (
-        station, observation_date, metric
-    )
+    UNIQUE (station, observation_date, metric)
 );
 
 DROP TABLE IF EXISTS bronze.stations;
