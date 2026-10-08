@@ -124,7 +124,10 @@ VALUES
 4. Incremental Load Tests
 ==============================================================================
 */
-SELECT topic_id, topic_date, topic_body
+SELECT 
+    topic_id, 
+    topic_date, 
+    topic_body
 FROM ${TARGET_SCHEMA_IMPORT}.tmp_topic src
 WHERE NOT EXISTS (
         SELECT *
