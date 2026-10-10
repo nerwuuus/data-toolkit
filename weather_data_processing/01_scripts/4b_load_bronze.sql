@@ -1,24 +1,27 @@
 /*
-============================================================================
+==============================================================================
 Stored Procedure: Load Bronze Layer (Staging -> Bronze)
-============================================================================
+==============================================================================
 Script Purpose:
-  This stored procedure performs the load process to populate the 'bronze'
-  schema tables from the 'staging' schema.
+    This stored procedure incrementally loads raw data from the Staging layer
+    into the Bronze layer while preserving source values.
 
 Actions Performed:
-  - Reads incoming raw data from Staging tables.
-  - Inserts new records into Bronze tables.
-  - Preserves raw source values without analytical transformations.
-  - Prevents already existing records from being loaded again.
-============================================================================
+    - Reads incoming raw data from Staging tables.
+    - Inserts only new records into Bronze tables.
+    - Preserves raw source values without analytical transformations.
+    - Prevents duplicate records using natural keys and UNIQUE constraints.
+    - Verifies that all Staging records are represented in Bronze after the load.
+    - Raises an exception if any expected records are missing.
+    - Truncates Staging tables only after successful validation.
+==============================================================================
 */
 
 CREATE OR REPLACE PROCEDURE load_bronze()
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- 1. Load weather data
+    -- 1. Load data into bronze.weather table
     INSERT INTO bronze.weather (
         station,
         observation_date,
@@ -49,7 +52,7 @@ BEGIN
     )
     ON CONFLICT (station, observation_date, metric) DO NOTHING;
 
-    -- 2. Load stations data
+    -- 2. Load data into bronze.stations table
     INSERT INTO bronze.stations (
         station,
         latitude,
