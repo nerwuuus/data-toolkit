@@ -24,7 +24,7 @@ Script Purpose:
 
 DROP VIEW IF EXISTS gold.weather_observations; 
 
-CREATE VIEW gold.weather_observations AS
+CREATE VIEW gold.poland_weather_observations AS
     SELECT
         w.station,
         s.station_name,
