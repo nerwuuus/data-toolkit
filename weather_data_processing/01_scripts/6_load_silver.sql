@@ -1,14 +1,17 @@
 /*
-============================================================================
+==============================================================================
 Stored Procedure: Load Silver Layer (Bronze -> Silver)
-============================================================================
+==============================================================================
 Script Purpose:
-  This stored procedure performs the ETL (Extract, Transform, Load) process to
-  populate the 'silver' schema tables from the 'bronze' schema.
+    This stored procedure performs the ETL process used to incrementally load
+    transformed and cleansed data from the Bronze layer into the Silver layer.
+
 Actions Performed:
-  - Truncates Silver tables.
-  - Inserts transformed and cleansed data from Bronze into Silver tables.
-============================================================================
+    - Inserts only new records from Bronze into Silver.
+    - Applies data cleaning and transformation rules.
+    - Prevents duplicate records using natural keys and UNIQUE constraints.
+    - Preserves existing Silver data between pipeline runs.
+==============================================================================
 */
 
 CREATE OR REPLACE PROCEDURE load_silver()
@@ -33,9 +36,18 @@ BEGIN
             WHEN metric IN ('TAVG', 'TMIN', 'TMAX') THEN value / 10.0
             ELSE value
         END AS value
-    FROM bronze.weather;
+    FROM bronze.weather bw
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM silver.weather sw
+        WHERE
+            TRIM(bw.station) = sw.station
+            AND bw.observation_date = sw.observation_date
+            AND bw.metric = sw.metric
+    )
+    ON CONFLICT (station, observation_date, metric) DO NOTHING;
 
-    -- 2. Truncate and load data into silver.stations table
+    -- 2. Load data into silver.stations table
     INSERT INTO silver.stations (
         station,
         elevation,
@@ -49,14 +61,20 @@ BEGIN
         END AS elevation,
     -- Capitalize the first letter of each word
     TRIM(INITCAP(station_name)) AS station_name
-    FROM bronze.stations;
+    FROM bronze.stations bs
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM silver.stations ss
+        WHERE TRIM(bs.station) = ss.station
+    )
+    ON CONFLICT (station) DO NOTHING;
 
-    -- Final message
+    -- 3. Final message
     RAISE NOTICE 'Silver tables have been successfully updated.';
 END;
 $$;
 
--- CALL load_silver();
+CALL load_silver();
 
 
 
