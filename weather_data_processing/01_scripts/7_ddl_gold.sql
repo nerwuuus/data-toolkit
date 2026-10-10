@@ -22,7 +22,7 @@ Script Purpose:
 ============================================================================== 
 */
 
-DROP VIEW IF EXISTS gold.weather_observations; 
+DROP VIEW IF EXISTS gold.poland_weather_observations; 
 
 CREATE VIEW gold.poland_weather_observations AS
     SELECT
