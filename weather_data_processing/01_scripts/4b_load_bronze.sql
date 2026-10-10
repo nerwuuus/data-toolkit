@@ -18,66 +18,99 @@ CREATE OR REPLACE PROCEDURE load_bronze()
 LANGUAGE plpgsql
 AS $$
 BEGIN
-  -- Weather data
-  INSERT INTO bronze.weather (
-      station,
-      observation_date,
-      metric,
-      value,
-      measurement_flag,
-      quality_flag,
-      source_flag,
-      observation_time
-  )
-  SELECT
-      station,
-      observation_date,
-      metric,
-      value,
-      measurement_flag,
-      quality_flag,
-      source_flag,
-      observation_time
-  FROM staging.weather sw
-  WHERE NOT EXISTS (
-      SELECT *
-      FROM bronze.weather bw
-      WHERE
-          sw.station = bw.station 
-          AND sw.observation_date = bw.observation_date 
-          AND sw.metric = bw.metric
-  )
-  ON CONFLICT (station, observation_date, metric) DO NOTHING;
+    -- Weather data
+    INSERT INTO bronze.weather (
+        station,
+        observation_date,
+        metric,
+        value,
+        measurement_flag,
+        quality_flag,
+        source_flag,
+        observation_time
+    )
+    SELECT
+        station,
+        observation_date,
+        metric,
+        value,
+        measurement_flag,
+        quality_flag,
+        source_flag,
+        observation_time
+    FROM staging.weather sw
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM bronze.weather bw
+        WHERE
+            sw.station = bw.station
+            AND sw.observation_date = bw.observation_date
+            AND sw.metric = bw.metric
+    )
+    ON CONFLICT (station, observation_date, metric) DO NOTHING;
 
-  -- Stations data
-  INSERT INTO bronze.stations (
-      station,
-      latitude,
-      longitude,
-      elevation,
-      state,
-      station_name,
-      gsn_flag,
-      hcn_flag,
-      wmo_id
-  )
-  SELECT
-      station,
-      latitude,
-      longitude,
-      elevation,
-      state,
-      station_name,
-      gsn_flag,
-      hcn_flag,
-      wmo_id
-  FROM staging.stations ss
-  WHERE NOT EXISTS (
-      SELECT *
-      FROM bronze.stations bs
-      WHERE ss.station = bs.station 
-  )
-  ON CONFLICT (station) DO NOTHING;  
+    -- Stations data
+    INSERT INTO bronze.stations (
+        station,
+        latitude,
+        longitude,
+        elevation,
+        state,
+        station_name,
+        gsn_flag,
+        hcn_flag,
+        wmo_id
+    )
+    SELECT
+        station,
+        latitude,
+        longitude,
+        elevation,
+        state,
+        station_name,
+        gsn_flag,
+        hcn_flag,
+        wmo_id
+    FROM staging.stations ss
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM bronze.stations bs
+        WHERE ss.station = bs.station
+    )
+    ON CONFLICT (station) DO NOTHING;
+
+    -- Verify that all staging weather rows exist in bronze.weather.
+    IF EXISTS (
+        SELECT 1
+        FROM staging.weather sw
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM bronze.weather bw
+            WHERE
+                sw.station = bw.station
+                AND sw.observation_date = bw.observation_date
+                AND sw.metric = bw.metric
+        )
+    ) THEN
+        RAISE EXCEPTION 'Missing weather rows in bronze.weather.';
+    END IF;
+
+    -- Verify that all staging station rows exist in bronze.stations.
+    IF EXISTS (
+        SELECT 1
+        FROM staging.stations ss
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM bronze.stations bs
+            WHERE ss.station = bs.station
+        )
+    ) THEN
+        RAISE EXCEPTION 'Missing station rows in bronze.stations.';
+    END IF;
+
+    -- Truncate staging tables only after successful validation.
+    TRUNCATE TABLE staging.weather;
+    TRUNCATE TABLE staging.stations;
 
     -- Final message
     RAISE NOTICE 'Bronze tables have been successfully updated.';
