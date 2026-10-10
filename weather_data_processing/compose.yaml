@@ -39,7 +39,11 @@ services:
       retries: 5
       start_period: 10s
 
-  init-db: # Run manually only for first-time database setup or full rebuild.
+  init-db: 
+    # Use the "setup" profile so this service runs only when explicitly requested
+    # for first-time database initialization or a full rebuild.
+    profiles:
+      - setup
     image: postgres:17 # Use the PostgreSQL image because it includes the psql command-line client.
     container_name: weather-init-db
     working_dir: /app
