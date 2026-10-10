@@ -39,7 +39,7 @@ services:
       retries: 5
       start_period: 10s
 
-  init-db: # One-time service that initializes the database structure by running SQL scripts.
+  init-db: # Run manually only for first-time database setup or full rebuild.
     image: postgres:17 # Use the PostgreSQL image because it includes the psql command-line client.
     container_name: weather-init-db
     working_dir: /app
@@ -54,14 +54,15 @@ services:
       sh -c "
       psql -h db -p ${DB_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f 01_scripts/1_create_schemas.sql
       &&
-      psql -h db -p ${DB_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f 01_scripts/2_ddl_bronze.sql
+      psql -h db -p ${DB_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f 01_scripts/2a_ddl_staging.sql
+      &&
+      psql -h db -p ${DB_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f 01_scripts/2b_ddl_bronze.sql
       &&
       psql -h db -p ${DB_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f 01_scripts/5_ddl_silver.sql
       &&
       psql -h db -p ${DB_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f 01_scripts/7_ddl_gold.sql
       "
-
-  load-bronze:
+  load-staging:
     build:
       context: .
       dockerfile: 03_docker/Dockerfile
@@ -70,11 +71,27 @@ services:
     env_file:
       - .env
     depends_on:
-      init-db:
-        condition: service_completed_successfully
-    command: python 01_scripts/4_load_bronze.py
+      db:
+        condition: service_healthy
+    command: python 01_scripts/4a_load_staging.py
     volumes:
       - .:/app
+
+  load-bronze:
+    image: postgres:17
+    container_name: weather-load-bronze
+    working_dir: /app
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - .:/app
+    depends_on:
+      load-staging:
+        condition: service_completed_successfully
+    command: >
+      sh -c "
+      psql -h db -p ${DB_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f 01_scripts/4b_load_bronze.sql
+      "
 
   load-silver:
     image: postgres:17
