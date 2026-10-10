@@ -119,12 +119,14 @@ INSERT INTO staging.weather_test (
     observation_time
 )
 VALUES
-    ('PL000000001', '2026-10-01', 'TAVG', 125, NULL, NULL, 'A', '1200'),
-    ('PL000000001', '2026-10-01', 'TMAX', 178, NULL, NULL, 'A', '1200'),
-    ('PL000000001', '2026-10-01', 'TMIN', 72,  NULL, NULL, 'A', '1200'),
-    ('PL000000002', '2026-10-01', 'PRCP', 15,  NULL, NULL, 'A', '1200'),
-    ('PL000000002', '2026-10-02', 'TAVG', 110, NULL, NULL, 'A', '1200'),
-    ('PL000000003', '2026-10-02', 'SNWD', 0,   NULL, NULL, 'A', '1200');
+    ('PL000000111', '2022-12-01', 'TAVG', 5, NULL, NULL, 'A', '0023'),
+    ('PL000000001', '2022-10-01', 'TMAX', 178, NULL, NULL, 'A', '1200'),
+    ('PL000000002', '2026-10-01', 'TMIN', 72, NULL, NULL, 'A', '1100'),
+    ('PL000000004', '2026-10-01', 'PRCP', 15, NULL, NULL, 'A', '1200'),
+    ('PL000000006', '2026-10-02', 'TAVG', 110, NULL, NULL, 'A', '1500'),
+    ('PL000000006', '2026-10-02', 'TAVG', 110, NULL, NULL, 'A', '1500'),
+    ('DE000000026', '2023-01-12', 'TMIN', 142, NULL, NULL, 'A', '1756'),
+    ('PL000000003', '2026-10-02', 'SNWD', 0, NULL, NULL, 'A', '1200');
 
 -- Load sample stations data into staging.stations_test
 INSERT INTO staging.stations_test (
@@ -141,7 +143,8 @@ INSERT INTO staging.stations_test (
 VALUES
     ('PL000000001', 52.4210, 16.8260, 86.0, 'WP', 'POZNAN TEST', NULL, NULL, 12345),
     ('PL000000002', 52.2297, 21.0122, 112.0, 'MZ', 'WARSAW TEST', NULL, NULL, 23456),
-    ('PL000000003', 50.0647, 19.9450, 219.0, 'MA', 'KRAKOW TEST', NULL, NULL, 34567);
+    ('DE000000002', 53.2137, 20.2230, 112.0, 'DE', 'GERMAN TEST', NULL, NULL, 23455),
+    ('PL000000007', 50.0647, 19.9450, 219.0, 'MA', 'KRAKOW TEST', NULL, NULL, 34567);
 
 /*
 ==============================================================================

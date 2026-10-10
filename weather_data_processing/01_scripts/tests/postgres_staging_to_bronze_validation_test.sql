@@ -76,7 +76,7 @@ BEGIN
                 AND sw.metric = bw.metric
         )
     ) THEN
-        RAISE EXCEPTION 'Missing weather rows in bronze.';
+        RAISE EXCEPTION 'Missing weather rows in bronze_weather.';
     END IF;
 
     -- Verify that all staging station rows exist in bronze.stations_test.
@@ -89,7 +89,7 @@ BEGIN
             WHERE ss.station = bs.station
         )
     ) THEN
-        RAISE EXCEPTION 'Missing station rows in bronze.';
+        RAISE EXCEPTION 'Missing station rows in bronze_stations.';
     END IF;
 
     -- Truncate staging tables only after successful validation.
