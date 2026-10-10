@@ -8,7 +8,7 @@ into Bronze was executed using:
 - `ON CONFLICT DO NOTHING`
 
 Observed runtime:
-- 180+ minutes and still running
+- 12h 55m 52s
 
 Observed resource usage during the load:
 - CPU usage remained relatively low
@@ -16,11 +16,13 @@ Observed resource usage during the load:
 - Memory usage was not close to the system limit
 
 Conclusion:
-The incremental loading logic is suitable for recurring small staging batches,
-but is inefficient for the initial historical bootstrap.
+The incremental loading strategy is not suitable for the initial historical
+bootstrap of approximately 422 million rows.
 
-Initial historical loads and recurring incremental loads should be treated as
-separate use cases.
+Initial historical loads and recurring incremental loads should use separate
+loading strategies. The current `NOT EXISTS` + `UNIQUE` + `ON CONFLICT`
+approach should be evaluated on small incremental batches rather than
+on the full historical dataset.
 
 ## Lessons learned
 
