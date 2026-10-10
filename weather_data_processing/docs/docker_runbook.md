@@ -37,7 +37,7 @@ Copy-Item .env.example .env
 ## First-Time Database Setup
 
 The `init-db` service is intended only for the initial database setup or for a
-deliberate full rebuild.
+full rebuild.
 
 It creates the database schemas and layer structures:
 
@@ -163,19 +163,19 @@ start automatically.
 Check database initialization:
 
 ```powershell
-docker compose logs --tail=50 init-db
+docker compose logs init-db
 ```
 
 Check Staging load:
 
 ```powershell
-docker compose logs --tail=50 load-staging
+docker compose logs load-staging
 ```
 
 Check Bronze load:
 
 ```powershell
-docker compose logs --tail=50 load-bronze
+docker compose logs load-bronze
 ```
 
 Expected successful Bronze output includes:
@@ -187,7 +187,7 @@ Bronze tables have been successfully updated.
 Check Silver load:
 
 ```powershell
-docker compose logs --tail=50 load-silver
+docker compose logs load-silver
 ```
 
 Expected successful Silver output includes:
@@ -256,10 +256,11 @@ This stops and removes containers, but keeps the PostgreSQL data volume.
 
 ## Notes
 
-The Docker pipeline uses sample weather data by default:
+The Docker pipeline uses the sample weather dataset and full stations dataset by default:
 
 ```text
 00_raw_data/weather_sample.csv
+00_raw_data/stations.csv
 ```
 
 The full NOAA dataset is used for local preparation, analysis, and benchmarking,
