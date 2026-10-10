@@ -18,7 +18,7 @@ CREATE OR REPLACE PROCEDURE load_bronze()
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Weather data
+    -- 1. Load weather data
     INSERT INTO bronze.weather (
         station,
         observation_date,
@@ -49,7 +49,7 @@ BEGIN
     )
     ON CONFLICT (station, observation_date, metric) DO NOTHING;
 
-    -- Stations data
+    -- 2. Load stations data
     INSERT INTO bronze.stations (
         station,
         latitude,
@@ -79,7 +79,7 @@ BEGIN
     )
     ON CONFLICT (station) DO NOTHING;
 
-    -- Verify that all staging weather rows exist in bronze.weather.
+    -- 3. Verify that all staging weather rows exist in bronze.weather.
     IF EXISTS (
         SELECT 1
         FROM staging.weather sw
@@ -95,7 +95,7 @@ BEGIN
         RAISE EXCEPTION 'Missing weather rows in bronze.weather.';
     END IF;
 
-    -- Verify that all staging station rows exist in bronze.stations.
+    -- 4. Verify that all staging station rows exist in bronze.stations.
     IF EXISTS (
         SELECT 1
         FROM staging.stations ss
@@ -108,11 +108,11 @@ BEGIN
         RAISE EXCEPTION 'Missing station rows in bronze.stations.';
     END IF;
 
-    -- Truncate staging tables only after successful validation.
+    -- 5. Truncate staging tables only after successful validation.
     TRUNCATE TABLE staging.weather;
     TRUNCATE TABLE staging.stations;
 
-    -- Final message
+    -- 6. Final message
     RAISE NOTICE 'Bronze tables have been successfully updated.';
 END;
 $$;

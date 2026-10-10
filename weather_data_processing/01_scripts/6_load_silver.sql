@@ -11,12 +11,11 @@ Actions Performed:
 ============================================================================
 */
 
-CREATE OR REPLACE PROCEDURE truncate_and_load_silver()
+CREATE OR REPLACE PROCEDURE load_silver()
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Step 1: Truncate and load data into silver.weather table
-    TRUNCATE TABLE silver.weather;
+    -- 1. Load data into silver.weather table
     INSERT INTO silver.weather (
         station,
         observation_date,
@@ -36,8 +35,7 @@ BEGIN
         END AS value
     FROM bronze.weather;
 
-    -- Step 2: Truncate and load data into silver.stations table
-    TRUNCATE TABLE silver.stations;
+    -- 2. Truncate and load data into silver.stations table
     INSERT INTO silver.stations (
         station,
         elevation,
@@ -58,7 +56,7 @@ BEGIN
 END;
 $$;
 
-CALL truncate_and_load_silver();
+-- CALL load_silver();
 
 
 
@@ -73,3 +71,7 @@ FROM information_schema.columns
 WHERE table_schema = 'silver'
   AND table_name = 'weather'
   AND column_name = 'value';
+
+
+SELECT COUNT(*)
+FROM silver.weather
