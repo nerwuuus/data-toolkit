@@ -37,9 +37,3 @@ CREATE VIEW gold.weather_observations AS
     LEFT JOIN silver.stations AS s
         ON w.station = s.station
     WHERE w.station LIKE 'PL%';
-
--- -- Data quality check:
--- -- Verify that all weather stations have matching station metadata.
--- SELECT COUNT(*)
--- FROM gold.weather_observations
--- WHERE station_name IS NULL;
