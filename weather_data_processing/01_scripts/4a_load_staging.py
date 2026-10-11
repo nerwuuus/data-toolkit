@@ -41,8 +41,8 @@ WEATHER_CSV = os.getenv('WEATHER_CSV')
 start_time = time.perf_counter()
 
 # Define table names where data will be truncated and loaded
-weather_table = "staging.weather"
-stations_table = "staging.stations"
+staging_weather = "staging.weather"
+staging_stations = "staging.stations"
 
 # Initialize database objects before the try block
 # They remain None if the connection cannot be established
@@ -65,10 +65,10 @@ try:
 
     # Load the smaller station table first so formatting errors are detected
     # before starting the much larger weather data load
-    print(f"Truncating table {stations_table}...")
-    cur.execute(f"TRUNCATE TABLE {stations_table};")
+    print(f"Truncating table {staging_stations}...")
+    cur.execute(f"TRUNCATE TABLE {staging_stations};")
 
-    print(f"Starting COPY for {stations_table}...")
+    print(f"Starting COPY for {staging_stations}...")
     # Open the CSV file in read mode.
     # The file object will be used as the data source for COPY
     with open( 
@@ -81,7 +81,7 @@ try:
         # cur.copy_expert(sql_query, file)
         cur.copy_expert( 
             f"""
-            COPY {stations_table}  (
+            COPY {staging_stations}  (
                 station,
                 latitude,
                 longitude,
@@ -103,12 +103,12 @@ try:
             file
         )
 
-    print(f"COPY for {stations_table} finished.")
+    print(f"COPY for {staging_stations} finished.")
 
-    print(f"Truncating table {weather_table}...")
-    cur.execute(f"TRUNCATE TABLE {weather_table};")
+    print(f"Truncating table {staging_weather}...")
+    cur.execute(f"TRUNCATE TABLE {staging_weather};")
 
-    print(f"Starting COPY for {weather_table}...")
+    print(f"Starting COPY for {staging_weather}...")
     with open(
         WEATHER_CSV,
         "r",
@@ -116,7 +116,7 @@ try:
     ) as file:
         cur.copy_expert(
             f"""
-            COPY {weather_table} (
+            COPY {staging_weather} (
                 station,
                 observation_date,
                 metric,
@@ -137,11 +137,11 @@ try:
             file
         )
 
-    print(f"COPY for {weather_table} finished. Committing transaction...")
+    print(f"COPY for {staging_weather} finished. Committing transaction...")
 
     # Save all changes permanently
     conn.commit()
-    print(f"Data was loaded successfully to the table {weather_table} and {stations_table}.")
+    print(f"Data was loaded successfully to the table {staging_weather} and {staging_stations}.")
 
     # Convert the elapsed time from seconds to minutes and display it
     # with two decimal places
