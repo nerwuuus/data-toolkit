@@ -26,6 +26,25 @@ The Gold layer is implemented as a SQL view, so it does not require a separate l
 
 The `init-db` service is intended only for the first database setup or for an intentional full rebuild. It should not be part of the regular incremental pipeline because the DDL scripts may recreate database objects.
 
+## Airflow
+
+Apache Airflow is included in the Docker setup to orchestrate the weather data pipeline.
+
+The current local setup uses `LocalExecutor` and the following Airflow services:
+
+- `airflow-postgres`
+- `airflow-init`
+- `airflow-apiserver`
+- `airflow-scheduler`
+- `airflow-dag-processor`
+
+Airflow uses a separate PostgreSQL database for its metadata.
+
+The Airflow UI is available at:
+
+```text
+http://localhost:8080
+
 ## Data
 
 The Docker workflow uses the sample weather dataset and full stations dataset by default:
