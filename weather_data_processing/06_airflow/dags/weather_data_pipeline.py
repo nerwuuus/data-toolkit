@@ -2,6 +2,7 @@
 from datetime import datetime, timedelta
 from airflow.sdk import DAG
 from airflow.providers.standard.operators.bash import BashOperator
+from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 
 # Define default settings shared by all tasks in this DAG.
 default_args = {
@@ -22,12 +23,34 @@ with DAG(
 ) as dag:
 
     # Define or Instantiate Tasks
+
     load_staging = BashOperator(
         task_id='load_staging',
         bash_command='python /app/01_scripts/4a_load_staging.py'
     )
 
+    load_bronze = SQLExecuteQueryOperator(
+        task_id='load_bronze',
+        bash_command=''
+    )
+
+                sql_operator_name = SQLExecuteQueryOperator(
+                    task_id="sql_operator_name",
+                    conn_id="postgres",
+                        sql="""
+                            CREATE TABLE IF NOT EXISTS table_name (
+                                field_one TEXT NOT NULL,
+                                field_two TEXT NOT NULL,
+                                    :
+                                field_n TEXT NOT NULL
+                            );
+                        """,
+                    dag=dag_name,
+                )
+
+
+
 # Define task dependencies
-# print_welcome_task
+load_staging >> load_bronze
 
 
