@@ -37,6 +37,7 @@ DATA_DIR =  os.getenv('DATA_DIR')
 STATIONS_CSV = os.getenv('STATIONS_CSV')
 WEATHER_CSV = os.getenv('WEATHER_CSV')
 
+
 # Set the counter
 start_time = time.perf_counter()
 
