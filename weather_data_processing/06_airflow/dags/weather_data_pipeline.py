@@ -11,7 +11,7 @@ default_args = {
 }
 
 # Define or Instantiate DAG
-dag = DAG(
+with DAG(
     dag_id='weather_data_pipeline',
     default_args=default_args,
     description='Orchestrates the weather data pipeline from Staging ' \
@@ -19,15 +19,15 @@ dag = DAG(
     start_date=datetime(2026, 10, 11, 8), # year, month, day, hour
     schedule='@daily',
     catchup=False
-)
+) as dag:
 
-# Define or Instantiate Tasks
-load_staging = BashOperator(
-    task_id='load_staging',
-    bash_command='python /app/01_scripts/4a_load_staging.py'
-)
+    # Define or Instantiate Tasks
+    load_staging = BashOperator(
+        task_id='load_staging',
+        bash_command='python /app/01_scripts/4a_load_staging.py'
+    )
 
 # Define task dependencies
-print_welcome_task
+# print_welcome_task
 
 
