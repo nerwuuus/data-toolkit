@@ -2,3 +2,10 @@
 02_plots/
 .env
 .env.analysis
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Airflow logs
+06_airflow/logs/
