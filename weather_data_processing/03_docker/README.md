@@ -5,7 +5,7 @@ This directory contains the Docker configuration used to run the Weather Data Pr
 ## Files
 
 - `Dockerfile` — builds the Python application image and installs project dependencies from `requirements.txt`.
-- `compose.yaml` — defines the PostgreSQL database and pipeline services.
+- `compose.yaml` — defines the PostgreSQL database, pipeline services, and Airflow services.
 - `.env.example` — example environment configuration for Docker Compose.
 
 ## Pipeline
@@ -44,6 +44,19 @@ The Airflow UI is available at:
 
 ```text
 http://localhost:8080
+```
+
+Airflow files are stored in:
+
+```text
+06_airflow/
+```
+
+For additional Airflow setup notes, see:
+
+```text
+docs/airflow_environment.md
+```
 
 ## Data
 
