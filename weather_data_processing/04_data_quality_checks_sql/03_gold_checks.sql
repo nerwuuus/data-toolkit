@@ -32,7 +32,7 @@ SELECT
     station,
     observation_date,
     metric
-FROM gold.weather_observations
+FROM gold.poland_weather_observations
 GROUP BY
     station,
     observation_date,
