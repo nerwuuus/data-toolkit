@@ -73,10 +73,6 @@ FROM bronze.stations
 GROUP BY station
 HAVING COUNT(*) > 1;
 
-SELECT station_name
-FROM bronze.stations
-GROUP BY station_name
-HAVING COUNT(*) > 1;
 
 
 -- Date range checks
