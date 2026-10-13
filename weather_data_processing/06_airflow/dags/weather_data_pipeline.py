@@ -19,7 +19,8 @@ with DAG(
                 'through Bronze and Silver, including data quality checks.',
     start_date=datetime(2026, 10, 11, 8), # year, month, day, hour
     schedule='@daily',
-    catchup=False
+    catchup=False,
+    template_searchpath=["/app/04_data_quality_checks_sql/automated_airflow_checks"]
 ) as dag:
 
     # Define Airflow tasks
@@ -52,20 +53,20 @@ with DAG(
     bronze_dq = SQLExecuteQueryOperator(
         task_id='bronze_dq',
         conn_id="analytics_db",
-        sql='04_data_quality_checks/automated_airflow_checks/01_bronze_dq.sql'
+        sql='01_bronze_dq.sql'
     )
     
     silver_dq = SQLExecuteQueryOperator(
         task_id='silver_dq',
         conn_id="analytics_db",
-        sql='04_data_quality_checks/automated_airflow_checks/02_silver_dq.sql'
+        sql='02_silver_dq.sql'
     )
 
     gold_dq = SQLExecuteQueryOperator(
-        task_id='silver_dq',
+        task_id='gold_dq',
         conn_id="analytics_db",
-        sql='04_data_quality_checks/automated_airflow_checks/03_gold_dq.sql'
+        sql='03_gold_dq.sql'
     )
 
 # Define task dependencies
-load_staging >> load_bronze >> load_silver >> [bronze_dq, silver_dq, gold_dq]
+load_staging >> load_bronze >> bronze_dq >> load_silver >> [silver_dq, gold_dq]
