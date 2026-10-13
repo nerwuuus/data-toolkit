@@ -1,37 +1,31 @@
-# Airflow
+## Current Airflow Pipeline
 
-This directory contains the Apache Airflow configuration used to orchestrate the Weather Data Processing pipeline.
+The current DAG orchestrates the following workflow:
 
-The current local setup uses `LocalExecutor`.
+`load_staging -> load_bronze -> load_silver -> [bronze_dq, silver_dq, gold_dq]`
 
-## Executor Choice
+- `load_staging`
+  - uses `BashOperator`
+  - runs `/app/01_scripts/4a_load_staging.py`
+  - loads the current source batch into Staging
+- `load_bronze`
+  - uses `SQLExecuteQueryOperator`
+  - executes the PostgreSQL `load_bronze()` procedure
+- `load_silver`
+  - uses `SQLExecuteQueryOperator`
+  - executes the PostgreSQL `load_silver()` procedure
+- Bronze, Silver, and Gold DQ checks run automatically after the load
+- Gold is implemented as a normal VIEW, so it does not require a separate load task
 
-The Airflow configuration currently uses:
+[Weather Data Pipeline](docs/weather_data_pipeline-graph.png)
 
-```text
-AIRFLOW__CORE__EXECUTOR=LocalExecutor
-```
+## Staging / TRUNCATE
 
-`LocalExecutor` is sufficient for this project because the pipeline is developed and tested locally on a single machine.
+`4a_load_staging.py` currently truncates:
 
-## Why Celery Components Are Disabled
+- `staging.stations`
+- `staging.weather`
 
-This project uses `LocalExecutor`, so Celery-specific components are not required:
+This is intentional if Staging represents only the current incoming batch.
 
-- **Redis** — Celery message broker.
-- **airflow-worker** — executes Celery tasks.
-- **Flower** — monitors Celery workers and queues.
-
-They are disabled because tasks are executed locally.
-
-## Current Airflow Services
-
-The local setup currently uses:
-
-- airflow-postgres
-- airflow-init
-- airflow-apiserver
-- airflow-scheduler
-- airflow-dag-processor
-
-Redis, Celery workers, and Flower are intentionally excluded.
+The incremental logic is handled when data moves from Staging to Bronze, rather than by preserving historical data in Staging.
