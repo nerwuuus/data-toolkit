@@ -27,6 +27,7 @@ BEGIN
 END $$;
 
 
+
 -- Check for NULL observation_date values in bronze.weather
 DO $$
 BEGIN
@@ -40,6 +41,7 @@ BEGIN
 END $$;
 
 
+
 -- Check for NULL metric values in bronze.weather
 DO $$
 BEGIN
@@ -51,6 +53,7 @@ BEGIN
         RAISE EXCEPTION 'DQ failed: NULL metric values found in bronze.weather';
     END IF;
 END $$;
+
 
 
 -- Check for NULL station values in bronze.stations
