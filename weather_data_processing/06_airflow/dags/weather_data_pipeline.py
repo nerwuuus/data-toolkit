@@ -22,35 +22,50 @@ with DAG(
     catchup=False
 ) as dag:
 
-    # Define or Instantiate Tasks
+    # Define Airflow tasks
 
+    # Load raw source data into the Staging layer
     load_staging = BashOperator(
         task_id='load_staging',
         bash_command='python /app/01_scripts/4a_load_staging.py'
     )
 
+    # Load new records from Staging into the Bronze layer
     load_bronze = SQLExecuteQueryOperator(
         task_id='load_bronze',
-        bash_command=''
+        conn_id="analytics_db",
+        sql="""
+            CALL load_bronze();
+        """
     )
 
-                sql_operator_name = SQLExecuteQueryOperator(
-                    task_id="sql_operator_name",
-                    conn_id="postgres",
-                        sql="""
-                            CREATE TABLE IF NOT EXISTS table_name (
-                                field_one TEXT NOT NULL,
-                                field_two TEXT NOT NULL,
-                                    :
-                                field_n TEXT NOT NULL
-                            );
-                        """,
-                    dag=dag_name,
-                )
+    # Transform and load new records from Bronze into the Silver layer
+    load_silver = SQLExecuteQueryOperator(
+        task_id='load_silver',
+        conn_id="analytics_db",
+        sql="""
+            CALL load_silver();
+        """
+    )
 
+    # Execute automated data quality checks for the Bronze, Silver, and Gold layers.
+    bronze_dq = SQLExecuteQueryOperator(
+        task_id='bronze_dq',
+        conn_id="analytics_db",
+        sql='04_data_quality_checks/automated_airflow_checks/01_bronze_dq.sql'
+    )
+    
+    silver_dq = SQLExecuteQueryOperator(
+        task_id='silver_dq',
+        conn_id="analytics_db",
+        sql='04_data_quality_checks/automated_airflow_checks/02_silver_dq.sql'
+    )
 
+    gold_dq = SQLExecuteQueryOperator(
+        task_id='silver_dq',
+        conn_id="analytics_db",
+        sql='04_data_quality_checks/automated_airflow_checks/03_gold_dq.sql'
+    )
 
 # Define task dependencies
-load_staging >> load_bronze
-
-
+load_staging >> load_bronze >> load_silver >> [bronze_dq, silver_dq, gold_dq]
