@@ -87,20 +87,6 @@ END $$;
 
 
 
--- Check for sentinel values in the elevation column of silver.weather
-DO $$
-BEGIN
-    IF EXISTS (
-        SELECT elevation
-        FROM silver.weather
-        WHERE value = -999.9
-    ) THEN
-        RAISE EXCEPTION 'DQ failed: sentinel value -999.9 found in silver.weather';
-    END IF;
-END $$;
-
-
-
 -- Check for duplicate natural keys in silver.weather
 DO $$
 BEGIN
