@@ -67,3 +67,40 @@ BEGIN
         RAISE EXCEPTION 'DQ failed: NULL station values found in bronze.stations';
     END IF;
 END $$;
+
+
+
+
+-- Check for duplicate natural keys in bronze.weather
+DO $$
+BEGIN
+    IF EXISTS (
+    SELECT
+        station,
+        observation_date,
+        metric
+    FROM bronze.weather
+    GROUP BY
+        station,
+        observation_date,
+        metric
+    HAVING COUNT(*) > 1
+    ) THEN
+        RAISE EXCEPTION 'DQ failed: duplicate natural keys found in bronze.weather';
+    END IF;
+END $$;
+
+
+
+-- Check for duplicate station identifiers in bronze.stations
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT station
+        FROM bronze.stations
+        GROUP BY station
+        HAVING COUNT(*) > 1
+    ) THEN
+        RAISE EXCEPTION 'DQ failed: duplicate natural keys found in bronze.stations';
+    END IF;
+END $$;
