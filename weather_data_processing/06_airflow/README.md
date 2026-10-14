@@ -2,7 +2,7 @@
 
 The current DAG orchestrates the following workflow:
 
-`load_staging -> load_bronze -> load_silver -> [bronze_dq, silver_dq, gold_dq]`
+`load_staging -> load_bronze -> bronze_dq -> load_silver -> [silver_dq, gold_dq]`
 
 - `load_staging`
   - uses `BashOperator`
@@ -10,16 +10,19 @@ The current DAG orchestrates the following workflow:
   - loads the current source batch into Staging
 - `load_bronze`
   - uses `SQLExecuteQueryOperator`
+  - executes the PostgreSQL script `01_bronze_dq.sql`
+- `bronze_dq`
+  - uses `SQLExecuteQueryOperator`
   - executes the PostgreSQL `load_bronze()` procedure
 - `load_silver`
   - uses `SQLExecuteQueryOperator`
   - executes the PostgreSQL `load_silver()` procedure
-- Bronze, Silver, and Gold DQ checks run automatically after the load
+- Silver, and Gold DQ checks run automatically after the load and use `SQLExecuteQueryOperator`
 - Gold is implemented as a normal VIEW, so it does not require a separate load task
 
 [Weather Data Pipeline](docs/weather_data_pipeline-graph.png)
 
-## Staging / TRUNCATE
+## Staging/TRUNCATE
 
 `4a_load_staging.py` currently truncates:
 
