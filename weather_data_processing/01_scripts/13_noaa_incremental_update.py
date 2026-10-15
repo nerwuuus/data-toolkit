@@ -14,6 +14,42 @@
 # - Should this be implemented as a standalone script first or directly as an Airflow DAG?
 # - How should this test table eventually relate to the main bronze/silver/gold pipeline?
 
-# Planned for a later stage, most likely after introducing Airflow orchestration.
+# ======================================================================
+# Import libraries
+import os
+from dotenv import load_dotenv
+from sqlalchemy import create_engine
+from pathlib import Path
+import pandas as pd
+import polars as pl
 
+# analytics_db connection
+# Define project paths and load local database credentials from the .env file
+PROJECT_PATH = Path(
+    r"C:\Users\zychl\Documents\GitHub\data-toolkit\weather_data_processing"
+)
+
+load_dotenv(PROJECT_PATH / ".env") 
+
+# PostgreSQL connection details
+username = os.getenv('POSTGRES_USER')
+password = os.getenv('POSTGRES_PASSWORD')
+host = 'localhost'
+port = os.getenv('HOST_POSTGRES_PORT')
+database = os.getenv('POSTGRES_DB')
+
+engine = create_engine(
+    f'postgresql+pg8000://{username}:{password}@{host}:{port}/{database}'
+    )
+
+# Fetch the data from PostgreSQL analytics_db server - bronze layer
+print('Executing query...')
+
+bronze_observation_date = pd.read_sql(
+    'SELECT MAX(observation_date) AS max_observation_date ' \
+    'FROM bronze.weather',
+    con=engine
+    )
+
+print(f'Executing query finished. The result is {bronze_observation_date}')
 
