@@ -97,6 +97,7 @@ services:
       &&
       psql -h db -p ${DB_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f 01_scripts/7_ddl_gold.sql
       "
+
   load-staging:
     build:
       context: .
@@ -143,6 +144,7 @@ services:
       sh -c "
       psql -h db -p ${DB_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f 01_scripts/6_load_silver.sql
       "
+      
   airflow-postgres:
     image: postgres:16
     container_name: airflow-postgres
