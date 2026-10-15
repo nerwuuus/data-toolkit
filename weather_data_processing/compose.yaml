@@ -109,7 +109,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: python 01_scripts/4a_load_staging.py
+    command: python -u 01_scripts/4a_load_staging.py
     volumes:
       - .:/app
 
