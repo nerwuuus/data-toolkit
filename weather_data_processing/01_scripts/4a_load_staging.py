@@ -22,12 +22,12 @@ import traceback
 
 # Build the project path relative to this script and load .env.analysis
 BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(BASE_DIR /'.env.analysis')
+load_dotenv(BASE_DIR /'.env')
 
 # Read database configuration from environment variables.
-POSTGRES_USER = os.getenv('DB_USER')
-POSTGRES_PASSWORD = os.getenv('DB_PASSWORD')
-POSTGRES_DB = os.getenv('DB_NAME')
+POSTGRES_USER = os.getenv('POSTGRES_USER')
+POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
+POSTGRES_DB = os.getenv('POSTGRES_DB')
 
 DB_HOST = os.getenv('DB_HOST')
 DB_PORT = os.getenv('DB_PORT')
