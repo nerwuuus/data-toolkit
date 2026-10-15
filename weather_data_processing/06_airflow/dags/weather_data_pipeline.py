@@ -68,5 +68,8 @@ with DAG(
         sql='03_gold_dq.sql'
     )
 
-# Define task dependencies
-load_staging >> load_bronze >> bronze_dq >> load_silver >> [silver_dq, gold_dq]
+# Temporary dependency chain used during the full historical load.
+# load_staging is skipped to avoid reloading the 15 GB source file.
+# load_staging >> load_bronze >> bronze_dq >> load_silver >> [silver_dq, gold_dq]
+
+load_bronze >> bronze_dq >> load_silver >> [silver_dq, gold_dq]
