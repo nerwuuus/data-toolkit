@@ -82,7 +82,10 @@ BEGIN
     )
     ON CONFLICT (station) DO NOTHING;
 
-    -- 3. Verify that all staging weather rows exist in bronze.weather.
+    -- 3. Verify that all staging weather rows exist in bronze.weather 
+    -- based on the natural key. SELECT 1 is used because EXISTS only 
+    -- checks whether a matching row exists; the actual selected value 
+    -- is irrelevant.
     IF EXISTS (
         SELECT 1
         FROM staging.weather sw
