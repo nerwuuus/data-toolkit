@@ -15,12 +15,13 @@
 # - How should this test table eventually relate to the main bronze/silver/gold pipeline?
 
 # ======================================================================
+# Set up connection with PostgreSQL
+# ======================================================================
 # Import libraries
 import os
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from pathlib import Path
-import pandas as pd
 import polars as pl
 
 # analytics_db connection
@@ -45,11 +46,53 @@ engine = create_engine(
 # Fetch the data from PostgreSQL analytics_db server - bronze layer
 print('Executing query...')
 
-bronze_observation_date = pd.read_sql(
+bronze_max_date = pl.read_database(
+    query=
     'SELECT MAX(observation_date) AS max_observation_date ' \
     'FROM bronze.weather',
-    con=engine
+    connection=engine
     )
 
-print(f'Executing query finished. The result is {bronze_observation_date}')
+bronze_max_date = bronze_max_date['max_observation_date'][0]
 
+print(f'Executing query finished. The result is {bronze_max_date}')
+
+# ======================================================================
+# Get the latest weather data from the NOAA
+# ======================================================================
+from datetime import datetime
+
+current_year = datetime.now().year
+
+url = f"https://www.ncei.noaa.gov/pub/data/ghcn/daily/by_year/{current_year}.csv.gz"
+
+df = pl.read_csv(
+    url,
+    has_header=False
+    )
+
+# Rename columns 
+df = df.rename({
+    "column_1": "station",
+    "column_2": "observation_date",
+    "column_3": "metric",
+    "column_4": "value",
+    "column_5": "measurement_flag",
+    "column_6": "quality_flag",
+    "column_7": "source_flag",
+    "column_8": "observation_time"
+})
+
+# Convert 'observation_date' to YYYY-MM-DD
+df = df.with_columns(
+    pl.col('observation_date')
+    .cast(pl.String)
+    .str.strptime(pl.Date, '%Y%m%d')
+)
+
+# Extract max date from df and convert it to YYYY-MM-DD
+df_max_date = df.select(
+    pl.col('observation_date').max()
+    )
+
+# Compare dates??
