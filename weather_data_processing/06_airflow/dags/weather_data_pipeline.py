@@ -26,10 +26,13 @@ with DAG(
     # Define Airflow tasks
 
     # Load raw source data into the Staging layer
-    load_staging = BashOperator(
-        task_id='load_staging',
-        bash_command='python /app/01_scripts/4a_load_staging.py'
-    )
+    # Temporarily disabled during the full historical bootstrap
+    # to avoid reloading the 15 GB source file.
+    #
+    # load_staging = BashOperator(
+    #     task_id='load_staging',
+    #     bash_command='python /app/01_scripts/4a_load_staging.py'
+    # )
 
     # Load new records from Staging into the Bronze layer
     load_bronze = SQLExecuteQueryOperator(
@@ -68,8 +71,7 @@ with DAG(
         sql='03_gold_dq.sql'
     )
 
-# Temporary dependency chain used during the full historical load.
-# load_staging is skipped to avoid reloading the 15 GB source file.
 # load_staging >> load_bronze >> bronze_dq >> load_silver >> [silver_dq, gold_dq]
 
+# Temporary dependency chain used during the full historical load.
 load_bronze >> bronze_dq >> load_silver >> [silver_dq, gold_dq]
