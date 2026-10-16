@@ -2,43 +2,23 @@ INSERT INTO silver.weather (
     station,
     observation_date,
     metric,
-    value,
-    measurement_flag,
-    quality_flag,
-    source_flag,
-    observation_time
+    value
 )
 SELECT
     station,
     observation_date,
     metric,
-    value,
-    measurement_flag,
-    quality_flag,
-    source_flag,
-    observation_time
+    value
 FROM bronze.weather;
 
 
 INSERT INTO silver.stations (
     station,
-    latitude,
-    longitude,
     elevation,
-    state,
-    station_name,
-    gsn_flag,
-    hcn_flag,
-    wmo_id
+    station_name
 )
 SELECT
     station,
-    latitude,
-    longitude,
     elevation,
-    state,
-    station_name,
-    gsn_flag,
-    hcn_flag,
-    wmo_id
+    station_name
 FROM bronze.stations;
