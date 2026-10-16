@@ -84,6 +84,7 @@ df = df.rename({
 })
 
 # Convert 'observation_date' to YYYY-MM-DD
+# strp = string parse time
 df = df.with_columns(
     pl.col('observation_date')
     .cast(pl.String)
