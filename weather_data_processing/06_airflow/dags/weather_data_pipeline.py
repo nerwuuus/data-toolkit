@@ -18,7 +18,7 @@ with DAG(
     description='Orchestrates the weather data pipeline from Staging ' \
                 'through Bronze and Silver, including data quality checks.',
     start_date=datetime(2026, 10, 11, 8), # year, month, day, hour
-    schedule='@daily',
+    # schedule='@daily',
     catchup=False,
     template_searchpath=["/app/04_data_quality_checks_sql/automated_airflow_checks"]
 ) as dag:
