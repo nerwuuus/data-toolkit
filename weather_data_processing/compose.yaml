@@ -97,53 +97,6 @@ services:
       &&
       psql -h db -p ${DB_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f 01_scripts/7_ddl_gold.sql
       "
-
-  # load-staging:
-  #   build:
-  #     context: .
-  #     dockerfile: 03_docker/Dockerfile
-  #   image: weather-python
-  #   working_dir: /app
-  #   env_file:
-  #     - .env
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
-  #   command: python -u 01_scripts/4a_load_staging.py
-  #   volumes:
-  #     - .:/app
-
-  # load-bronze:
-  #   image: postgres:17
-  #   container_name: weather-load-bronze
-  #   working_dir: /app
-  #   environment:
-  #     PGPASSWORD: ${POSTGRES_PASSWORD}
-  #   volumes:
-  #     - .:/app
-  #   depends_on:
-  #     load-staging:
-  #       condition: service_completed_successfully
-  #   command: >
-  #     sh -c "
-  #     psql -h db -p ${DB_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f 01_scripts/4b_load_bronze.sql
-  #     "
-
-  # load-silver:
-  #   image: postgres:17
-  #   container_name: weather-load-silver
-  #   working_dir: /app
-  #   environment:
-  #     PGPASSWORD: ${POSTGRES_PASSWORD}
-  #   volumes:
-  #     - .:/app
-  #   depends_on:
-  #     load-bronze:
-  #       condition: service_completed_successfully
-  #   command: >
-  #     sh -c "
-  #     psql -h db -p ${DB_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f 01_scripts/6_load_silver.sql
-  #     "
       
   airflow-postgres:
     image: postgres:16
