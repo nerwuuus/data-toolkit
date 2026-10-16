@@ -113,37 +113,37 @@ services:
   #   volumes:
   #     - .:/app
 
-  load-bronze:
-    image: postgres:17
-    container_name: weather-load-bronze
-    working_dir: /app
-    environment:
-      PGPASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - .:/app
-    depends_on:
-      load-staging:
-        condition: service_completed_successfully
-    command: >
-      sh -c "
-      psql -h db -p ${DB_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f 01_scripts/4b_load_bronze.sql
-      "
+  # load-bronze:
+  #   image: postgres:17
+  #   container_name: weather-load-bronze
+  #   working_dir: /app
+  #   environment:
+  #     PGPASSWORD: ${POSTGRES_PASSWORD}
+  #   volumes:
+  #     - .:/app
+  #   depends_on:
+  #     load-staging:
+  #       condition: service_completed_successfully
+  #   command: >
+  #     sh -c "
+  #     psql -h db -p ${DB_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f 01_scripts/4b_load_bronze.sql
+  #     "
 
-  load-silver:
-    image: postgres:17
-    container_name: weather-load-silver
-    working_dir: /app
-    environment:
-      PGPASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - .:/app
-    depends_on:
-      load-bronze:
-        condition: service_completed_successfully
-    command: >
-      sh -c "
-      psql -h db -p ${DB_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f 01_scripts/6_load_silver.sql
-      "
+  # load-silver:
+  #   image: postgres:17
+  #   container_name: weather-load-silver
+  #   working_dir: /app
+  #   environment:
+  #     PGPASSWORD: ${POSTGRES_PASSWORD}
+  #   volumes:
+  #     - .:/app
+  #   depends_on:
+  #     load-bronze:
+  #       condition: service_completed_successfully
+  #   command: >
+  #     sh -c "
+  #     psql -h db -p ${DB_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f 01_scripts/6_load_silver.sql
+  #     "
       
   airflow-postgres:
     image: postgres:16
