@@ -35,7 +35,7 @@ DB_PORT = os.getenv('DB_PORT')
 # Read input file paths from environment variables.
 DATA_DIR =  os.getenv('DATA_DIR')
 STATIONS_CSV = os.getenv('STATIONS_CSV')
-WEATHER_CSV = os.getenv('WEATHER_CSV')
+WEATHER_BOOTSTRAP_CSV = os.getenv('WEATHER_BOOTSTRAP_CSV')
 
 
 # Set the counter
