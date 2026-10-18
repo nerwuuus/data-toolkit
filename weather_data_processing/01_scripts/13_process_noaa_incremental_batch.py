@@ -55,11 +55,6 @@ from datetime import datetime
 current_year = datetime.now().year
 
 weather_url = f"https://www.ncei.noaa.gov/pub/data/ghcn/daily/by_year/{current_year}.csv.gz"
-# ===============================================================
-# ===============================================================
-# stations_url PLACEHOLDER
-# ===============================================================
-# ===============================================================
 
 print(f"Downloading NOAA weather data for {current_year}...")
 
@@ -94,6 +89,58 @@ noaa_weather = noaa_weather.with_columns(
 )
 
 print("NOAA weather data preparation completed.")
+
+# ======================================================================
+# Get and prepare the latest weather data from NOAA
+# ======================================================================
+
+import pandas as pd
+
+print(f"Downloading NOAA station data...")
+
+stations_url = "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt"
+
+stations = pd.read_fwf( # Fixed-width formatted file
+    stations_url,
+    # Read the fixed-width station metadata file using column positions
+    # defined in the NOAA GHCN-D file specification.
+    colspecs=[
+        (0, 11),
+        (12, 20),
+        (21, 30),
+        (31, 37),
+        (38, 40),
+        (41, 71),
+        (72, 75),
+        (76, 79),
+        (80, 85)
+    ],
+    names=[
+        "station",
+        "latitude",
+        "longitude",
+        "elevation",
+        "state",
+        "station_name",
+        "gsn_flag",
+        "hcn_flag",
+        "wmo_id"
+    ]
+)
+
+print("NOAA station data preparation completed.")
+
+# ======================================================================
+# Save stations data as CSV file
+# ======================================================================
+
+print(f"Station batch contains {stations.height} rows.")
+
+print("Exporting stations batch...")
+
+stations.write_csv(STATIONS_CSV)
+
+print(f"Incremental stations batch saved in {STATIONS_CSV}")
 
 # ======================================================================
 # Filter new NOAA weather observations and save the incremental batch
@@ -144,47 +191,42 @@ try:
     cur = conn.cursor()
     print("Connected.")
 
-    # ====================================================
-    # TEMPORARILY DISABLED
-    # ====================================================
-    # print(f"Truncating table {staging_stations}...")
-    # cur.execute(f"TRUNCATE TABLE {staging_stations};")
+    print(f"Truncating table {staging_stations}...")
+    cur.execute(f"TRUNCATE TABLE {staging_stations};")
  
-    # print(f"Starting COPY for {staging_stations}...")
+    print(f"Starting COPY for {staging_stations}...")
 
-    # with open( 
-    #     STATIONS_CSV,
-    #     "r",
-    #     encoding="utf-8"
-    # ) as file:
-    #     # cur.copy_expert(sql_query, file)
-    #     cur.copy_expert( 
-    #         f"""
-    #         COPY {staging_stations}  (
-    #             station,
-    #             latitude,
-    #             longitude,
-    #             elevation,
-    #             state,
-    #             station_name,
-    #             gsn_flag,
-    #             hcn_flag,
-    #             wmo_id
-    #         )
-    #         FROM STDIN
-    #         WITH (
-    #             FORMAT csv,
-    #             HEADER true,
-    #             DELIMITER ',',
-    #             ENCODING 'UTF8'
-    #         )
-    #         """,
-    #         file
-    #     )
+    with open( 
+        STATIONS_CSV,
+        "r",
+        encoding="utf-8"
+    ) as file:
+        # cur.copy_expert(sql_query, file)
+        cur.copy_expert( 
+            f"""
+            COPY {staging_stations}  (
+                station,
+                latitude,
+                longitude,
+                elevation,
+                state,
+                station_name,
+                gsn_flag,
+                hcn_flag,
+                wmo_id
+            )
+            FROM STDIN
+            WITH (
+                FORMAT csv,
+                HEADER true,
+                DELIMITER ',',
+                ENCODING 'UTF8'
+            )
+            """,
+            file
+        )
 
-    # print(f"COPY for {staging_stations} finished.")
-    # ====================================================
-    # ====================================================
+    print(f"COPY for {staging_stations} finished.")
 
     print(f"Truncating table {staging_weather}...")
     cur.execute(f"TRUNCATE TABLE {staging_weather};")
