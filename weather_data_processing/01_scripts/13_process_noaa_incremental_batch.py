@@ -27,24 +27,24 @@ POSTGRES_USER = os.getenv('POSTGRES_USER')
 POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
 
 engine = create_engine(
-    f'postgresql+pg8000://{username}:{password}@{host}:{port}/{database}'
+    f'postgresql+pg8000://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{DB_HOST}:{DB_PORT}/{POSTGRES_DB}'
     )
 
 print('Connected.')
 
-# Fetch the data from PostgreSQL analytics_db server - bronze layer
-print('Executing query...')
+# Fetch the latest observation date currently available in the Bronze layer
+print("Fetching latest Bronze observation date...")
 
 bronze_max_date = pl.read_database(
     query=
-    'SELECT MAX(observation_date) AS max_observation_date ' \
+    'SELECT MAX(observation_date) AS max_observation_date '
     'FROM bronze.weather',
     connection=engine
-    )
+)
 
 bronze_max_date = bronze_max_date['max_observation_date'][0]
 
-print(f'Executing query finished. The result is {bronze_max_date}')
+print(f"Latest Bronze observation date: {bronze_max_date}")
 
 # ======================================================================
 # Get and prepare the latest weather data from NOAA
