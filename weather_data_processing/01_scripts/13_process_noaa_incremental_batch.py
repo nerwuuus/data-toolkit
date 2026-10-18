@@ -14,8 +14,8 @@ PROJECT_PATH = Path('/app')
 
 EXPORT_PATH = PROJECT_PATH / '00_raw_data'
 
-WEATHER_EXPORT = EXPORT_PATH / 'weather.csv'
-STATIONS_EXPORT = EXPORT_PATH / 'stations.csv'
+WEATHER_CSV = EXPORT_PATH / 'weather.csv'
+STATIONS_CSV = EXPORT_PATH / 'stations.csv'
 
 load_dotenv(PROJECT_PATH / ".env") 
 
@@ -54,12 +54,17 @@ from datetime import datetime
 
 current_year = datetime.now().year
 
-url = f"https://www.ncei.noaa.gov/pub/data/ghcn/daily/by_year/{current_year}.csv.gz"
+weather_url = f"https://www.ncei.noaa.gov/pub/data/ghcn/daily/by_year/{current_year}.csv.gz"
+# ===============================================================
+# ===============================================================
+# stations_url PLACEHOLDER
+# ===============================================================
+# ===============================================================
 
 print(f"Downloading NOAA weather data for {current_year}...")
 
 noaa_weather_raw = pl.read_csv(
-    url,
+    weather_url,
     has_header=False
     )
 
@@ -101,9 +106,9 @@ print(f"Incremental batch contains {noaa_weather.height} rows.")
 
 print("Exporting incremental weather batch...")
 
-noaa_weather.write_csv(WEATHER_EXPORT)
+noaa_weather.write_csv(WEATHER_CSV)
 
-print(f"Incremental weather batch saved in {WEATHER_EXPORT}")
+print(f"Incremental weather batch saved in {WEATHER_CSV}")
 
 # ======================================================================
 # Load the incremental NOAA batch into PostgreSQL Staging using COPY
@@ -127,8 +132,6 @@ conn = None
 
 print("Starting incremental data load into PostgreSQL Staging...")
 
-# try block contains a code that might raise an error
-# If everything runs fine, the except block is skipped
 try: 
     conn = psycopg2.connect(
         host=DB_HOST,
@@ -137,51 +140,51 @@ try:
         user=POSTGRES_USER,
         password=POSTGRES_PASSWORD
 )
-    
-    cur = conn.cursor()  # Creates a cursor object used to execute SQL statements
+    # Create cursor object used to execute SQL statements
+    cur = conn.cursor()
     print("Connected.")
 
-    # Load the smaller station table first so formatting errors are detected
-    # before starting the much larger weather data load
-    print(f"Truncating table {staging_stations}...")
-    cur.execute(f"TRUNCATE TABLE {staging_stations};")
+    # ====================================================
+    # TEMPORARILY DISABLED
+    # ====================================================
+    # print(f"Truncating table {staging_stations}...")
+    # cur.execute(f"TRUNCATE TABLE {staging_stations};")
+ 
+    # print(f"Starting COPY for {staging_stations}...")
 
-    print(f"Starting COPY for {staging_stations}...")
-    # Open the CSV file in read mode.
-    # The file object will be used as the data source for COPY
-    with open( 
-        STATIONS_CSV,
-        "r",
-        encoding="utf-8"
-    ) as file:
-        # Execute the PostgreSQL COPY command
-        # Data is streamed from the opened file through STDIN
-        # cur.copy_expert(sql_query, file)
-        cur.copy_expert( 
-            f"""
-            COPY {staging_stations}  (
-                station,
-                latitude,
-                longitude,
-                elevation,
-                state,
-                station_name,
-                gsn_flag,
-                hcn_flag,
-                wmo_id
-            )
-            FROM STDIN
-            WITH (
-                FORMAT csv,
-                HEADER true,
-                DELIMITER ',',
-                ENCODING 'UTF8'
-            )
-            """,
-            file
-        )
+    # with open( 
+    #     STATIONS_CSV,
+    #     "r",
+    #     encoding="utf-8"
+    # ) as file:
+    #     # cur.copy_expert(sql_query, file)
+    #     cur.copy_expert( 
+    #         f"""
+    #         COPY {staging_stations}  (
+    #             station,
+    #             latitude,
+    #             longitude,
+    #             elevation,
+    #             state,
+    #             station_name,
+    #             gsn_flag,
+    #             hcn_flag,
+    #             wmo_id
+    #         )
+    #         FROM STDIN
+    #         WITH (
+    #             FORMAT csv,
+    #             HEADER true,
+    #             DELIMITER ',',
+    #             ENCODING 'UTF8'
+    #         )
+    #         """,
+    #         file
+    #     )
 
-    print(f"COPY for {staging_stations} finished.")
+    # print(f"COPY for {staging_stations} finished.")
+    # ====================================================
+    # ====================================================
 
     print(f"Truncating table {staging_weather}...")
     cur.execute(f"TRUNCATE TABLE {staging_weather};")
@@ -219,24 +222,17 @@ try:
 
     # Save all changes permanently
     conn.commit()
-    print(f"Data was loaded successfully to the table {staging_weather} and {staging_stations}.")
+    # print(f"Data was loaded successfully to the table {staging_weather} and {staging_stations}.")
 
-    # Convert the elapsed time from seconds to minutes and display it
-    # with two decimal places
     elapsed = time.perf_counter() - start_time
     print(f"Load completed in {elapsed / 60:.2f} minutes.")
 
-# Executes only if an error occurs inside the try block and captures the error details in the variable e. 
-# If something goes wrong before commit(), calling rollback() undoes all changes made in the current 
-# transaction, restoring the database to its previous state. 
 except Exception as e: 
     if conn is not None:
         conn.rollback()
     print("An error occurred during the data load process:", e)
     traceback.print_exc()
 
-# Always close the cursor and database connection,
-# regardless of whether the ETL succeeded or failed
 finally:
     if cur is not None:
         cur.close()
