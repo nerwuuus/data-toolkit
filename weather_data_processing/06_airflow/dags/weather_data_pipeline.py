@@ -71,7 +71,5 @@ with DAG(
         sql='03_gold_dq.sql'
     )
 
-# load_incremental >> load_bronze >> bronze_dq >> load_silver >> [silver_dq, gold_dq]
-
-# Temporary dependency chain used during the full historical load.
-load_bronze >> bronze_dq >> load_silver >> [silver_dq, gold_dq]
+# Incremental pipeline task dependencies
+load_incremental_batch >> load_bronze >> bronze_dq >> load_silver >> [silver_dq, gold_dq]
