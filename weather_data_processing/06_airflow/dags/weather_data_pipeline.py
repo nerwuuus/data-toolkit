@@ -29,10 +29,10 @@ with DAG(
     # Temporarily disabled during the full historical bootstrap
     # to avoid reloading the 15 GB source file.
     
-    # load_incremental_batch = BashOperator(
-    #     task_id='load_incremental_batch',
-    #     bash_command='python /app/01_scripts/13_process_noaa_incremental_batch.py'
-    # )
+    load_incremental_batch = BashOperator(
+        task_id='load_incremental_batch',
+        bash_command='python /app/01_scripts/13_process_noaa_incremental_batch.py'
+    )
 
     # Load new records from Staging into the Bronze layer
     load_bronze = SQLExecuteQueryOperator(
