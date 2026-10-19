@@ -47,10 +47,9 @@ bronze_max_date = bronze_max_date['max_observation_date'][0]
 print(f"Latest Bronze observation date: {bronze_max_date}")
 
 # ======================================================================
-# Get and prepare the latest weather data from NOAA
+# Download and prepare the latest NOAA weather data
 # ======================================================================
 
-import logging
 from datetime import datetime
 
 current_year = datetime.now().year
@@ -111,7 +110,7 @@ noaa_weather_incremental.write_csv(WEATHER_CSV)
 print(f"Incremental weather batch saved in {WEATHER_CSV}")
 
 # ======================================================================
-# Get and prepare station metadata from NOAA
+# Download and prepare NOAA station metadata
 # ======================================================================
 
 import pandas as pd
@@ -153,7 +152,7 @@ stations = pl.from_pandas(pandas_stations)
 print("NOAA station metadata preparation completed.")
 
 # ======================================================================
-# Save stations data as CSV file
+# Save NOAA station metadata as an intermediate CSV file
 # ======================================================================
 
 print(f"NOAA station metadata contains {stations.height} rows.")
