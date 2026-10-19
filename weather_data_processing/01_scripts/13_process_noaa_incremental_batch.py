@@ -50,6 +50,7 @@ print(f"Latest Bronze observation date: {bronze_max_date}")
 # Get and prepare the latest weather data from NOAA
 # ======================================================================
 
+import logging
 from datetime import datetime
 
 current_year = datetime.now().year
@@ -91,16 +92,35 @@ noaa_weather = noaa_weather.with_columns(
 print("NOAA weather data preparation completed.")
 
 # ======================================================================
-# Get and prepare the latest weather data from NOAA
+# Filter new NOAA weather observations and save the incremental batch
+# as an intermediate CSV file
+# ======================================================================
+
+print("Filtering new weather observations...")
+
+noaa_weather_incremental = noaa_weather.filter(
+    pl.col('observation_date') > bronze_max_date
+)
+
+print(f"Incremental batch contains {noaa_weather_incremental.height} rows.")
+
+print("Exporting incremental weather batch...")
+
+noaa_weather_incremental.write_csv(WEATHER_CSV)
+
+print(f"Incremental weather batch saved in {WEATHER_CSV}")
+
+# ======================================================================
+# Get and prepare station metadata from NOAA
 # ======================================================================
 
 import pandas as pd
 
-print(f"Downloading NOAA station data...")
-
 stations_url = "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt"
 
-stations = pd.read_fwf( # Fixed-width formatted file
+print(f"Downloading NOAA station metadata...")
+
+pandas_stations = pd.read_fwf( # Fixed-width formatted file
     stations_url,
     # Read the fixed-width station metadata file using column positions
     # defined in the NOAA GHCN-D file specification.
@@ -128,34 +148,21 @@ stations = pd.read_fwf( # Fixed-width formatted file
     ]
 )
 
-print("NOAA station data preparation completed.")
+stations = pl.from_pandas(pandas_stations)
+
+print("NOAA station metadata preparation completed.")
 
 # ======================================================================
 # Save stations data as CSV file
 # ======================================================================
 
-print(f"Station batch contains {stations.height} rows.")
+print(f"NOAA station metadata contains {stations.height} rows.")
 
-print("Exporting stations batch...")
+print("Exporting NOAA station metadata...")
 
 stations.write_csv(STATIONS_CSV)
 
-print(f"Incremental stations batch saved in {STATIONS_CSV}")
-
-# ======================================================================
-# Filter new NOAA weather observations and save the incremental batch
-# as an intermediate CSV file
-# ======================================================================
-
-print("Filtering new weather observations...")
-
-print(f"Incremental batch contains {noaa_weather.height} rows.")
-
-print("Exporting incremental weather batch...")
-
-noaa_weather.write_csv(WEATHER_CSV)
-
-print(f"Incremental weather batch saved in {WEATHER_CSV}")
+print(f"NOAA stations metadata saved in {STATIONS_CSV}")
 
 # ======================================================================
 # Load the incremental NOAA batch into PostgreSQL Staging using COPY
