@@ -1,6 +1,6 @@
 # Data Toolkit
 
-A collection of practical SQL, Python (Pandas), and R scripts for data transformation, cleaning, validation, and analysis.
+A collection of practical SQL, Python, R, and Data Engineering projects focused on data processing, transformation, validation, analysis, and pipeline development.
 
 ## Repository Structure
 
@@ -9,7 +9,6 @@ data-toolkit/
 ├── sql/
 ├── python/
 ├── r/
-└── README.md
 ```
 
 ## Technologies
@@ -18,16 +17,20 @@ data-toolkit/
 - Python
 - Pandas
 - R
+- Polars
+- PySpark
+- Docker
+- Airflow
 
 ## Purpose
 
-This repository contains reusable scripts and examples focused on:
+This repository contains learning projects, reusable scripts, and experiments related to:
 
-- Data cleaning
-- Data transformation
-- Data reshaping (wide ↔ long)
-- Data validation
-- Data aggregation
-- Reporting
-
-> All scripts are anonymized and use sample data where necessary.
+- Data cleaning and transformation
+- Data validation and aggregation
+- SQL analysis
+- Python practice
+- ETL/ELT pipelines
+- Incremental data loading
+- Data Engineering workflows
+- The main Data Engineering project is located in `weather_data_processing`.
