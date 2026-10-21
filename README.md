@@ -7,8 +7,26 @@ A collection of practical SQL, Python, R, and Data Engineering projects focused 
 ```text
 data-toolkit/
 ├── sql/
+│   ├── campaign_data_transformation
+│   └── pivot_unpivot
+│
 ├── python/
+│   ├── course-100-days-of-code/
+│   └── misc/
+│
 ├── r/
+│
+├── weather_data_processing/
+│   ├── 00_raw_data/
+│   ├── 01_scripts/
+│   ├── 02_plots/
+│   ├── 03_docker/
+│   ├── 04_data_quality_checks_sql/
+│   ├── 06_airflow/
+│   ├── docs/
+│   └── README.md
+│
+└── README.md
 ```
 
 ## Technologies
