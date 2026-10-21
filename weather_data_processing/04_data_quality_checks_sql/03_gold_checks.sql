@@ -53,7 +53,7 @@ SELECT
     COUNT(*) FILTER (WHERE observation_date IS NULL) AS observation_date_nulls,
     COUNT(*) FILTER (WHERE metric IS NULL) AS metric_nulls,
     COUNT(*) FILTER (WHERE value IS NULL) AS value_nulls
-FROM gold.weather_observations;
+FROM gold.poland_weather_observations;
 
 
 
@@ -66,5 +66,5 @@ FROM gold.weather_observations;
 SELECT
     (SELECT MIN(observation_date) FROM silver.weather) AS silver_min_observation_date,
     (SELECT MAX(observation_date) FROM silver.weather) AS silver_max_observation_date,
-    (SELECT MIN(observation_date) FROM gold.weather_observations) AS gold_min_observation_date,
-    (SELECT MAX(observation_date) FROM gold.weather_observations) AS gold_max_observation_date;
+    (SELECT MIN(observation_date) FROM gold.poland_weather_observations) AS gold_min_observation_date,
+    (SELECT MAX(observation_date) FROM gold.poland_weather_observations) AS gold_max_observation_date;
