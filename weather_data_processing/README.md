@@ -2,26 +2,27 @@
 
 ## Initial Project Scope
 
-The project originally started as a small ETL exercise focused on:
+The project originally started as a small ETL project focused on:
 
 - Loading public NOAA weather data into PostgreSQL
-- Processing the data with Pandas
-- Creating simple weather variables
+- Processing the data with Pandas & Polars
 - Performing basic data quality checks
 - Generating a few exploratory plots
 - Exporting the processed data to CSV
 
-The scope expanded over time as the project evolved into a broader Data Engineering learning environment, including large-scale Parquet processing, Polars Lazy, PySpark, SQL transformations, incremental loading, Docker, and Apache Airflow orchestration.
+The scope expanded over time as the project evolved into a broader Data Engineering learning environment, including large-scale Parquet processing, Polars Lazy, PySpark, SQL transformations, bootstrap and incremental loading, Docker, PostgreSQL performance experiments, automated data quality checks, and Airflow orchestration.
+
+---
 
 ## Overview
 
 Weather Data Processing is an end-to-end Data Engineering project built around the NOAA Global Historical Climatology Network Daily (GHCN-Daily) dataset.
 
-The project demonstrates a complete data processing workflow, starting from raw weather observations, through staging and layered PostgreSQL processing, to automated orchestration and data quality validation.
+The project demonstrates a complete data processing workflow, starting from NOAA source data, through Staging and layered PostgreSQL processing, to automated incremental updates and data quality validation using Airflow.
 
 The current architecture uses:
 
-`Staging -> Bronze -> Silver -> Gold`
+`NOAA -> Staging -> Bronze -> Silver -> Gold VIEW`
 
 The primary goal of this project is to practice Data Engineering concepts rather than perform extensive exploratory data analysis.
 
@@ -30,30 +31,31 @@ The primary goal of this project is to practice Data Engineering concepts rather
 ## Dataset
 
 - Source: NOAA Global Historical Climatology Network Daily (GHCN-Daily)
-- Time period: 2015-2025, with newer 2026 observations used for incremental loading tests
-- Number of observations: ~422 million
+- Time period: 2015-2026, with 2026 data updated incrementally
+- Number of observations: approximately 429 million
 - Number of weather stations: worldwide
-- Docker demo dataset: smaller weather sample used for reproducible local testing
+- Station metadata: approximately 140,000 stations
 
-The full NOAA dataset is used for local data preparation, benchmarking, and large-scale processing.
+The historical dataset is used for bootstrap loading, benchmarking, and large-scale processing experiments.
 
-A smaller sample dataset is included to make the Dockerized pipeline easier to run and test.
+New NOAA observations are retrieved incrementally and loaded through the same Staging -> Bronze -> Silver pipeline.
 
 ---
 
 ## Project Objectives
 
-- Process a large real-world dataset (~422 million observations)
-- Compare CSV and Apache Parquet storage formats
+- Process a large real-world dataset containing hundreds of millions of observations
+- Compare CSV and Parquet storage formats
 - Compare Pandas and Polars performance
 - Experiment with PySpark
-- Build a Staging -> Bronze -> Silver -> Gold data pipeline
+- Build a Staging -> Bronze -> Silver -> Gold architecture
+- Separate historical bootstrap loading from recurring incremental loading
 - Load and transform data in PostgreSQL
-- Implement incremental loading
+- Implement natural-key-based incremental loading
 - Add automated data quality checks
-- Orchestrate the pipeline with Apache Airflow
+- Orchestrate the pipeline with Airflow
 - Practice reproducible Data Engineering workflows with Docker
-- Build a project that evolves beyond a simple ETL exercise
+- Practice PostgreSQL optimisations and window functions
 
 ---
 
@@ -61,21 +63,21 @@ A smaller sample dataset is included to make the Dockerized pipeline easier to r
 
 ```text
 weather_data_processing/
-├── 00_raw_data/                    # Raw data files, station metadata and sample dataset
-├── 01_scripts/                     # Python, SQL, notebooks, benchmarks and ETL scripts
-│   └── tests/                      # Tests for Python scripts and transformation logic
-├── 02_plots/                       # Generated charts
-├── 03_docker/                      # Dockerfile and Docker-related notes
+├── 00_raw_data/                     # Local raw, bootstrap and incremental data files
+├── 01_scripts/                      # Python, SQL, notebooks, benchmarks and ETL scripts
+│   └── tests/                       # Development and test scripts/notebooks
+├── 02_plots/                        # Generated charts
+├── 03_docker/                       # Docker-related files and notes
 ├── 04_data_quality_checks_sql/      # Manual and automated SQL data quality checks
-│   └── automated_airflow_checks/   # SQL DQ checks executed automatically by Airflow
-├── 06_airflow/                     # Airflow DAGs, logs, plugins and configuration
-├── docs/                           # Project documentation and pipeline diagrams
-├── compose.yaml                    # Docker Compose configuration
-├── requirements.txt                # Python dependencies
-├── .env                            # Local Docker environment variables, not committed to Git
-├── .env.example                    # Example Docker environment configuration
-├── .env.analysis                   # Local analysis environment variables, not committed to Git
-├── .dockerignore                   # Files excluded from Docker build context
+│   └── automated_airflow_checks/    # SQL DQ checks executed automatically by Airflow
+├── 05_postgres_optimisation/        # PostgreSQL performance and index experiments
+├── 06_airflow/                      # Airflow DAGs, Dockerfile, logs, plugins and documentation
+├── docs/                            # Project documentation and pipeline diagrams
+├── compose.yaml                     # Docker Compose configuration
+├── requirements.txt                 # Shared Python dependencies
+├── .env                             # Local Docker environment variables, not committed to Git
+├── .env.example                     # Example environment configuration
+├── .dockerignore                    # Files excluded from Docker build context
 └── README.md
 ```
 
@@ -88,46 +90,68 @@ weather_data_processing/
 - Polars
 - PySpark
 - PostgreSQL
-- Apache Airflow
-- Apache Parquet
+- Airflow
+- Parquet
 - Jupyter Notebook
 - Docker
+- SQLAlchemy
+- psycopg2
 - Git
 - GitHub
 - VS Code PostgreSQL extension
-- ChatGPT
+- ChatGPT/AI-assisted development (especially Docker)
 
 ---
 
 ## Data Pipeline
 
 ```text
-NOAA GHCN-Daily
-        │
-        ▼
-Raw CSV files
-        │
-        ▼
+NOAA GHCN-Daily (Weather & Stations)
+        |
+        v
+Incremental NOAA Weather & Stations processing
+        |
+        v
+Intermediate CSV batch
+        |
+        v
 Staging
-        │
-        ▼
+        |
+        v
 Bronze
-        │
-        ▼
+        |
+        v
 Silver
-        │
-        ▼
+        |
+        v
 Gold VIEW
-        │
-        ▼
+        |
+        v
 Data Quality Checks/Analysis
 ```
 
-The pipeline is orchestrated with Apache Airflow.
+The recurring pipeline is orchestrated with Airflow.
 
-Staging represents the current incoming batch, while Bronze and Silver preserve historical data using incremental loading logic.
+Staging represents only the current incoming batch, while Bronze and Silver preserve historical data using incremental loading logic.
 
-Gold is implemented as a PostgreSQL VIEW and does not require a separate load step during each pipeline run.
+Gold is implemented as a PostgreSQL VIEW and therefore does not require a separate load step during each pipeline run.
+
+---
+
+## Bootstrap Loading
+
+Historical bootstrap loading is intentionally separated from recurring incremental loading.
+
+The initial historical dataset is prepared and loaded with bootstrap-specific scripts. This avoids applying expensive incremental duplicate-protection logic to hundreds of millions of rows during the first load.
+
+Examples include:
+
+- `3a_bootstrap_prepare_weather_data_pandas.ipynb`
+- `4a_load_staging_bootstrap.py`
+
+After the historical bootstrap, the required `UNIQUE` constraints are restored to support `ON CONFLICT` during recurring incremental loads.
+
+This separation was introduced after the full historical Bronze load took approximately 12 hours 56 minutes when incremental duplicate-checking logic was used, while the dedicated bootstrap approach completed in over 1 hour.
 
 ---
 
@@ -157,8 +181,6 @@ This is a structural normalization step rather than a business transformation.
 
 No business cleaning, value conversion, or analytical transformation is applied at this stage.
 
-The semantic column names simplify PostgreSQL DDL, SQL processing, and later Silver transformations while preserving the original source values.
-
 ---
 
 ## Silver Layer
@@ -169,11 +191,10 @@ Examples of transformations include:
 
 - Trimming station identifiers
 - Cleaning station names
-- Converting NOAA temperature values to meaningful units
-- Replacing invalid elevation sentinel values with `NULL`
-- Preserving only valid structured records for downstream use
+- Converting NOAA temperature values to meaningful units by dividing by 10
+- Replacing invalid elevation sentinel values -999.99 with `NULL`
 
-Incremental loading is used so that only records not already present in Silver are inserted.
+Incremental loading inserts only records not already present in Silver.
 
 ---
 
@@ -181,27 +202,43 @@ Incremental loading is used so that only records not already present in Silver a
 
 The Gold layer is implemented as a PostgreSQL VIEW.
 
-It combines prepared weather observations with station metadata and exposes data in a form suitable for downstream analysis.
+It combines prepared weather observations with station metadata and exposes data in a form suitable for analysis.
 
-Because Gold is a normal VIEW, it does not require a separate load task during each Airflow run.
+Because Gold is a normal VIEW, it automatically reflects current Silver data and does not require a separate load or refresh task during each Airflow run.
+
+---
+
+## Incremental NOAA Processing
+
+The recurring source-processing step is implemented in:
+
+`01_scripts/13_process_noaa_incremental_batch.py`
+
+The script:
+
+1. Connects to PostgreSQL and reads `MAX(observation_date)` from `bronze.weather`.
+2. Detects the current year dynamically.
+3. Downloads the current NOAA yearly weather dataset.
+4. Reads and prepares weather data with Polars.
+5. Converts `observation_date` to a proper `Date` type.
+6. Filters observations newer than the current Bronze watermark.
+7. Downloads NOAA station metadata from the fixed-width station file.
+8. Parses the station metadata with Pandas and converts it to Polars.
+9. Writes intermediate `weather.csv` and `stations.csv` files.
+10. Uses PostgreSQL `COPY` through psycopg2 to load the current batch into Staging.
+
+The current-year NOAA file can contain millions of records, so PostgreSQL `COPY` is used instead of row-by-row inserts.
 
 ---
 
 ## Incremental Loading
 
-The pipeline uses natural keys to prevent duplicate inserts.
+The pipeline uses natural keys to prevent duplicate inserts. A natural key is a combination of business-related columns that uniquely 
+identifies a record without using an artificial ID.
 
-For weather observations, the natural key is:
+For weather observations, the natural key is `station + observation_date + metric`.
 
-```text
-station + observation_date + metric
-```
-
-For stations, the natural key is:
-
-```text
-station
-```
+For stations, the natural key is `station`.
 
 Incremental loading is implemented using PostgreSQL logic based on:
 
@@ -209,50 +246,55 @@ Incremental loading is implemented using PostgreSQL logic based on:
 - `UNIQUE` constraints
 - `ON CONFLICT DO NOTHING`
 
-This makes repeated pipeline runs idempotent and prevents duplicate historical records from being inserted.
+This prevents duplicate historical records from being inserted.
 
 ---
 
 ## Current Airflow Pipeline
 
-Apache Airflow is configured and running locally through Docker Compose.
+Airflow runs through Docker Compose.
 
-The current DAG orchestrates the following workflow:
+The current DAG orchestrates the complete recurring incremental workflow:
 
 ```text
-load_staging
-      |
-      v
+load_incremental_batch
+        |
+        v
 load_bronze
-      |
-      v
+        |
+        v
 bronze_dq
-      |
-      v
+        |
+        v
 load_silver
-      |
-      +--> silver_dq
-      |
-      +--> gold_dq
+        |
+        +--> silver_dq
+        |
+        +--> gold_dq
 ```
 
 Current tasks:
 
-- `load_staging`
+- `load_incremental_batch`
   - uses `BashOperator`
-  - runs `/app/01_scripts/4a_load_staging.py`
-  - loads the current source batch into Staging
+  - runs `/app/01_scripts/13_process_noaa_incremental_batch.py`
+  - retrieves the latest Bronze watermark
+  - downloads and prepares NOAA weather and station data
+  - filters the new weather observations
+  - loads the current batch into Staging using PostgreSQL `COPY`
 
 - `load_bronze`
   - uses `SQLExecuteQueryOperator`
   - executes the PostgreSQL `load_bronze()` procedure
+  - loads new Staging records into Bronze
+
+- `bronze_dq`
+  - runs automated Bronze data quality validation before Silver processing
 
 - `load_silver`
   - uses `SQLExecuteQueryOperator`
   - executes the PostgreSQL `load_silver()` procedure
-
-- `bronze_dq`
-  - runs automated Bronze data quality validation
+  - transforms and loads new Bronze records into Silver
 
 - `silver_dq`
   - runs automated Silver data quality validation
@@ -260,9 +302,9 @@ Current tasks:
 - `gold_dq`
   - runs automated Gold data quality validation
 
-Data quality SQL uses PostgreSQL exception logic so that failed validation causes the Airflow task to fail automatically.
+Data quality SQL uses PostgreSQL exception logic so that failed validation causes the corresponding Airflow task to fail automatically.
 
-[Weather Data Pipeline](docs/weather_data_pipeline-graph.png)
+![Weather Data Pipeline](../docs/weather_data_pipeline-graph.png)
 
 ---
 
@@ -270,12 +312,12 @@ Data quality SQL uses PostgreSQL exception logic so that failed validation cause
 
 Staging represents only the current incoming batch.
 
-`4a_load_staging.py` truncates:
+During recurring incremental runs, `13_process_noaa_incremental_batch.py` truncates and reloads:
 
 - `staging.stations`
 - `staging.weather`
 
-before loading the next batch.
+before loading the newly prepared source batch.
 
 This behavior is intentional.
 
@@ -283,10 +325,13 @@ Historical data is not preserved in Staging because its purpose is to hold only 
 
 Incremental history is preserved in Bronze and Silver.
 
-The expected flow is:
+The expected recurring flow is:
 
 ```text
-Current source batch
+Current NOAA data
+        |
+        v
+Filter observations newer than Bronze watermark
         |
         v
 Staging
@@ -335,7 +380,7 @@ If a validation condition is detected, PostgreSQL raises an exception and the co
 
 ## Docker Workflow
 
-The project includes a Docker Compose setup for running PostgreSQL, Python ETL scripts, and Apache Airflow locally.
+Docker Compose is used to run the local PostgreSQL and Airflow environment.
 
 The main components include:
 
@@ -343,16 +388,11 @@ The main components include:
   - PostgreSQL database used by the weather pipeline
 
 - `init-db`
-  - optional setup service used to initialize or rebuild database objects
+  - optional on-demand setup service used to initialize or rebuild database objects
+  - **intended to be run manually only when database setup or reconstruction is required**
 
-- `load-staging`
-  - loads the incoming source batch into Staging
-
-- `load-bronze`
-  - executes the Bronze load
-
-- `load-silver`
-  - executes the Silver load
+- `app`
+  - Python application image used for standalone pipeline/script execution and development tests
 
 - `airflow-postgres`
   - separate PostgreSQL database used only for Airflow metadata
@@ -368,7 +408,39 @@ The main components include:
 
 Airflow uses `LocalExecutor`.
 
-The weather PostgreSQL database and Airflow metadata database run in separate containers and use separate Docker volumes.
+Runtime pipeline orchestration is handled by Airflow rather than duplicated through separate Docker Compose load services.
+
+The weather PostgreSQL database and the Airflow metadata database run in separate containers and use separate Docker volumes.
+
+---
+
+## Custom Airflow Image
+
+Airflow uses its own Docker image and Python runtime.
+
+Mounting the project repository into Airflow containers with:
+
+```text
+.:/app
+```
+
+makes the project files available inside Airflow, but it does not automatically provide Python packages installed in the separate `app` image.
+
+For this reason, the project uses a custom Airflow Docker image based on:
+
+```text
+apache/airflow:3.3.2
+```
+
+The custom image installs the project dependencies from `requirements.txt`, keeping packages such as Polars, Pandas, SQLAlchemy, pg8000, psycopg2-binary, and python-dotenv available to Airflow tasks.
+
+The Docker and Docker Airflow environment were developed with AI assistance and manually tested during project development.
+
+The main separation is:
+
+- Docker volumes provide access to project files.
+- Docker images provide the Python runtime and installed dependencies.
+- Docker Compose networking allows Airflow tasks to reach PostgreSQL through `db:5432`.
 
 ---
 
@@ -391,7 +463,7 @@ Windows/host repository
 Docker bind mount
         |
         v
-/app/01_scripts/4a_load_staging.py
+/app/01_scripts/13_process_noaa_incremental_batch.py
 ```
 
 This makes it possible to reuse existing ETL scripts instead of rewriting them directly inside DAG files.
@@ -415,25 +487,26 @@ HOST_POSTGRES_PORT=5434
 
 DATA_DIR=/app/00_raw_data
 STATIONS_CSV=/app/00_raw_data/stations.csv
-WEATHER_CSV=/app/00_raw_data/weather_sample.csv
+WEATHER_CSV=/app/00_raw_data/weather.csv
+WEATHER_BOOTSTRAP_CSV=/app/00_raw_data/weather_bootstrap.csv
 
 FERNET_KEY=your_fernet_key_here
 AIRFLOW_UID=50000
 ```
 
-Inside Docker Compose, Python connects to PostgreSQL using:
+Inside Docker Compose, Python and Airflow tasks connect to PostgreSQL using:
 
 ```text
 db:5432
 ```
 
-From the host machine, PostgreSQL can be accessed using:
+From the Windows host, local tools such as VS Code and Jupyter connect to the same PostgreSQL container using:
 
 ```text
 localhost:5434
 ```
 
-Sensitive local values are stored in `.env` files and are not committed to Git.
+Sensitive local values are stored in `.env` and are not committed to Git.
 
 ---
 
@@ -445,7 +518,7 @@ Start the Dockerized environment:
 docker compose up -d
 ```
 
-Rebuild containers if required:
+Rebuild containers after dependency or Dockerfile changes:
 
 ```powershell
 docker compose up -d --build
@@ -481,13 +554,13 @@ http://localhost:8080
 
 The current DAG can be triggered manually from the Airflow UI.
 
-Each task has its own logs, including output generated by Python scripts and SQL execution.
+Airflow retries are configured at DAG level so transient task failures can be retried automatically.
 
 ---
 
-## PostgreSQL Connection from VS Code
+## PostgreSQL Connection from VS Code and Jupyter
 
-The PostgreSQL database can be accessed from VS Code using a PostgreSQL extension.
+The PostgreSQL database runs inside Docker but is exposed to the Windows host through port `5434`.
 
 Example local connection settings:
 
@@ -499,19 +572,7 @@ User: postgres
 SSL mode: Disable
 ```
 
-Example validation queries:
-
-```sql
-SELECT COUNT(*)
-FROM bronze.weather;
-
-SELECT COUNT(*)
-FROM silver.weather;
-
-SELECT *
-FROM gold.weather_observations
-LIMIT 10;
-```
+Local Jupyter notebooks use the same host connection, while scripts running inside Docker use `db:5432`.
 
 ---
 
@@ -519,20 +580,20 @@ LIMIT 10;
 
 The project includes performance comparisons of:
 
-- CSV vs Apache Parquet
+- CSV vs Parquet
 - Pandas vs Polars
 - Read performance
 - Write performance
 - Storage efficiency
 - Large-scale lazy processing
 
-The benchmarks were performed using the complete NOAA dataset containing approximately 422 million observations.
+The benchmarks were originally performed using the historical NOAA dataset containing approximately 422 million observations.
 
 ---
 
 ## PostgreSQL Performance Experiments
 
-The project also includes PostgreSQL performance experiments related to:
+The project includes PostgreSQL performance experiments related to:
 
 - incremental loading
 - indexing
@@ -541,86 +602,31 @@ The project also includes PostgreSQL performance experiments related to:
 - large historical loads
 - bootstrap vs incremental processing
 
-A full historical Bronze load using incremental duplicate protection required significantly more time than a simple bulk load (12 hours to load 422 mln rows).
+Index tests showed that indexes are useful only when the filter is selective enough.
 
-This demonstrated an important architectural lesson:
+For example, filtering a broad one-year range still resulted in a `Parallel Seq Scan`, while a narrower one-month range used the `observation_date` index.
+
+This demonstrated that adding an index does not automatically improve every query and that PostgreSQL chooses plans based on estimated cost and selectivity.
+
+A second important lesson came from the historical load:
 
 ```text
 Historical bootstrap and recurring incremental loading should not always use the same loading strategy.
 ```
 
-Incremental logic optimized for recurring small batches can become expensive when applied to hundreds of millions of historical records.
+Incremental duplicate protection is appropriate for recurring batches but can become expensive when applied to hundreds of millions of historical records.
 
 ---
 
-## Analysis
+## Analysis and SQL Practice
 
 The analytical part of the project is intentionally limited.
 
-Its purpose is to validate the processed dataset and demonstrate SQL queries, Pandas, Polars, PySpark, and basic visualizations rather than perform comprehensive exploratory data analysis.
+Its purpose is to validate the processed dataset and demonstrate SQL, Pandas, Polars, PySpark, and basic visualizations rather than perform comprehensive exploratory data analysis.
+
+A dedicated SQL practice script is used to continue learning analytical SQL, including window functions, on the real weather dataset.
 
 The primary focus remains Data Engineering.
-
----
-
-## Current Status
-
-Completed:
-
-- Raw data preparation
-- Pandas processing
-- Polars processing
-- Polars Lazy processing
-- PySpark processing experiment
-- CSV vs Parquet benchmark
-- Pandas vs Polars benchmark
-- PostgreSQL Staging architecture
-- PostgreSQL Bronze layer
-- PostgreSQL Silver layer
-- PostgreSQL Gold VIEW
-- Bronze incremental loading
-- Silver incremental loading
-- Natural key and duplicate protection
-- Bronze data quality checks
-- Silver data quality checks
-- Gold data quality checks
-- PostgreSQL performance experiments
-- Dockerfile for Python environment
-- Docker Compose setup
-- Automated database initialization
-- Apache Airflow setup
-- Airflow LocalExecutor configuration
-- Airflow orchestration of Staging -> Bronze -> Silver
-- Automated Airflow DQ tasks
-- Airflow task logging
-- PostgreSQL connection from VS Code
-
-In progress:
-
-- Automated incremental NOAA data retrieval
-- Automatic detection of the newest observation already stored in Bronze
-- Filtering NOAA data to only new observations
-- Saving the missing batch as the next Staging input
-- Adding the incremental NOAA update as the first Airflow DAG task
-- SQL window functions practice
-- Selected pytest tests
-- Final project documentation
-
----
-
-## Future Improvements
-
-- Complete automated incremental NOAA data retrieval
-- Add the incremental NOAA preparation step as the first Airflow task
-- Add selected pytest tests where they provide real value
-- Practice SQL window functions on the weather dataset
-- Improve final project documentation
-- Improve the architecture diagram
-- Review Docker Compose configuration and understand each important section
-- Review `.env`, `.env.analysis`, `.env.example`, and `.env.example.analysis`
-- Add cloud storage integration as a later learning step
-- Explore Data Warehouse / Data Lake / Data Lakehouse architecture concepts
-- Explore Spark, Kafka, and cloud services only after the current pipeline is complete
 
 ---
 
