@@ -2,7 +2,6 @@
 ==============================================================================
 SQL Practice Script: Window Functions
 ==============================================================================
-
 Script Purpose:
     This script is intended for practicing SQL window functions on the weather
     dataset.
@@ -34,14 +33,24 @@ Data Source:
         gold.weather_observations
 
     or another validated analytical table/view created from the Silver layer.
-
-Usage:
-    Run each query separately while learning and experimenting with SQL window
-    functions. This script is for practice and learning, not for production data
-    loading.
-
 ==============================================================================
 */
+
+SELECT *
+FROM silver.weather
+LIMIT 10;
+
+SELECT *
+FROM silver.stations
+LIMIT 10;
+
+
+SELECT
+    station,
+    observation_date,
+    SUM(value) OVER (PARTITION BY station) total_prcp
+FROM silver.weather
+WHERE metric = 'PRCP'
 
 
 
