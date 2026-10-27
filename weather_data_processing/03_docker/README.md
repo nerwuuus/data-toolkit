@@ -1,32 +1,61 @@
 # Docker
 
-This directory contains the Docker configuration used to run the Weather Data Processing project in a reproducible local environment.
+Docker provides the infrastructure required to run the Weather Data Processing project.
 
-## Files
-
-- `Dockerfile` — builds the Python application image and installs project dependencies from `requirements.txt`.
-- `compose.yaml` — defines the PostgreSQL database, Python application environment, and Airflow services.
-- `.env.example` — example environment configuration for Docker Compose.
-
-## Docker Architecture
-
-Docker Compose provides the infrastructure required by the project.
-
-The main runtime components are:
+## Architecture
 
 ```text
-NOAA
-  ↓
-Airflow
-  ↓
-Python / SQL pipeline
-  ↓
-PostgreSQL
+Docker Compose
+    ↓
+PostgreSQL + Airflow
+
+First-time database setup
+    ↓
+init-db
+
+Recurring pipeline
+    ↓
+Airflow DAG
 ```
 
-Pipeline execution is orchestrated by Airflow rather than by separate Docker Compose load services.
+Docker Compose runs the infrastructure.
 
-The current incremental workflow is:
+Airflow orchestrates the recurring incremental pipeline.
+
+The `init-db` service is used only for the initial database setup or an intentional full rebuild. It is kept outside the Airflow DAG because it creates database objects and may execute destructive DDL statements.
+
+## Quick Start
+
+Create a local `.env` file:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Start the infrastructure:
+
+```powershell
+docker compose up -d
+```
+
+## First-Time Database Setup
+
+Run only when creating the database structure for the first time or rebuilding it intentionally:
+
+```powershell
+docker compose --profile setup run --rm init-db
+```
+
+This creates the required database layers:
+
+- Staging
+- Bronze
+- Silver
+- Gold
+
+## Incremental Pipeline
+
+The recurring pipeline is orchestrated by Apache Airflow:
 
 ```text
 load_incremental_batch
@@ -36,174 +65,53 @@ load_bronze
 bronze_dq
         ↓
 load_silver
-      ↙     ↘
-silver_dq  gold_dq
+       ↙       ↘
+silver_dq   gold_dq
 ```
 
-The Gold layer is implemented as a PostgreSQL VIEW and therefore does not require a separate load task.
+`load_incremental_batch`:
 
-## Database Initialization
+- fetches the latest Bronze observation date
+- downloads current NOAA weather data
+- filters only new observations
+- prepares NOAA station metadata
+- loads the incremental batch into PostgreSQL Staging
 
-The `init-db` service is an optional on-demand setup service used to initialize or intentionally rebuild database objects.
+Bronze and Silver are then updated using SQL procedures, followed by automated data quality checks.
 
-It is run manually only when database setup or reconstruction is required.
+## Database Access
 
-It is not part of the recurring incremental pipeline because the DDL scripts WILL modify existing database objects.
-
-Historical bootstrap loading is handled separately from recurring incremental processing.
-
-After the historical bootstrap, the required `UNIQUE` constraints are restored to support `ON CONFLICT` during normal incremental loads.
-
-This separation was introduced after the full historical Bronze load took approximately 12 hours 56 minutes when incremental duplicate-checking logic was used, while the dedicated bootstrap approach completed in over 1 hour.
-
-## Airflow
-
-Airflow orchestrates the recurring weather data pipeline.
-
-The current setup uses `LocalExecutor` and includes:
-
-- `airflow-postgres`
-- `airflow-init`
-- `airflow-apiserver`
-- `airflow-scheduler`
-- `airflow-dag-processor`
-
-Airflow uses a separate PostgreSQL database for its internal metadata.
-
-The weather PostgreSQL database and the Airflow metadata database therefore run independently.
-
-The Airflow UI is available at:
+From Windows tools such as VS Code or Jupyter:
 
 ```text
-http://localhost:8080
+Host: localhost
+Port: 5434
+Database: analytics_db
+User: postgres
 ```
 
-Airflow files are stored in:
+From containers inside Docker Compose:
 
 ```text
-06_airflow/
+Host: db
+Port: 5432
+Database: analytics_db
 ```
 
-For additional Airflow setup notes, see:
+Both connection methods access the same PostgreSQL database running in Docker.
 
-```text
-docs/airflow_environment.md
-```
+## Historical Bootstrap
 
-## Custom Airflow Image
+The historical NOAA dataset contains more than 420 million weather observation records.
 
-Airflow uses a custom Docker image based on:
+The historical bootstrap is handled separately from the recurring incremental pipeline because full historical loads and incremental loads require different strategies.
 
-```text
-apache/airflow:3.3.2
-```
+Bootstrap scripts are not part of the normal Airflow DAG.
 
-The custom image installs the Python dependencies required by the pipeline from the project `requirements.txt`.
-
-The project repository is mounted into the Airflow containers as:
-
-```text
-/app
-```
-
-The bind mount provides access to project files, while the Docker image provides the Python runtime and required libraries.
-
-This keeps the application and Airflow environments aligned and avoids dependency differences between manually executed pipeline scripts and Airflow tasks.
-
-## Incremental NOAA Processing
-
-The pipeline starts with:
-
-```text
-01_scripts/13_process_noaa_incremental_batch.py
-```
-
-The script:
-
-- reads the latest `observation_date` stored in Bronze
-- downloads the current NOAA yearly weather dataset
-- filters observations newer than the Bronze watermark
-- downloads and prepares NOAA station metadata
-- saves intermediate CSV files
-- loads the current batch into PostgreSQL Staging using `COPY`
-
-Staging contains only the current incoming batch.
-
-Historical data is preserved in Bronze and Silver.
-
-## Data Files
-
-Runtime data files are stored under:
-
-```text
-00_raw_data/
-```
-
-Examples include:
-
-```text
-weather.csv
-stations.csv
-weather_bootstrap.csv
-```
-
-Large source and generated data files are excluded from Git and Docker image builds.
-
-Bootstrap data and recurring incremental batches are handled separately.
-
-## PostgreSQL Connections
-
-Containers inside Docker Compose connect to the weather PostgreSQL database using:
-
-```text
-db:5432
-```
-
-Tools running directly on the Windows host, such as VS Code or Jupyter Notebook, connect to the same Dockerized PostgreSQL database through:
-
-```text
-localhost:5434
-```
-
-Both connection paths access the same PostgreSQL database.
-
-## Running the Environment
-
-Build and start the environment:
-
-```powershell
-docker compose up -d --build
-```
-
-Start the existing images without rebuilding:
-
-```powershell
-docker compose up -d
-```
-
-Check service status:
-
-```powershell
-docker compose ps -a
-```
-
-Check logs:
-
-```powershell
-docker compose logs <service>
-```
-
-Stop the environment:
+## Stop
 
 ```powershell
 docker compose down
 ```
 
-## Documentation
-
-For additional setup and operational notes, see:
-
-```text
-docs/docker_runbook.md
-docs/airflow_environment.md
-```
+PostgreSQL data remains stored in the Docker volume.
