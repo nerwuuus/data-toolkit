@@ -1,272 +1,91 @@
 # Docker
 
-This directory contains the Docker configuration required to run the Weather Data Processing project.
+Docker provides the infrastructure required to run the Weather Data Processing project.
 
-Docker makes the project environment reproducible by running PostgreSQL, Python,
-and the required project dependencies in containers.
+## Architecture
 
-## Components
+```text
+Docker Compose
+    ↓
+PostgreSQL + Airflow
 
-- Python
-- PostgreSQL
-- Pandas
-- Polars
-- psycopg2
-- Docker Compose
+First-time setup
+    ↓
+init-db
 
-# Docker Runbook
+Recurring pipeline
+    ↓
+Airflow DAG
+```
+
+Docker Compose runs the infrastructure, while Apache Airflow orchestrates the recurring incremental pipeline.
+
+The `init-db` service is used only for the initial database setup or a full rebuild and is intentionally kept outside the Airflow DAG.
 
 ## Quick Start
 
-Open Docker Desktop.
-
-Open PowerShell in the project root:
-
-```text
-weather_data_processing
-```
-
-Create a local `.env` file from the example file:
+Create `.env` from the example file:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
----
-
-## First-Time Database Setup
-
-The `init-db` service is intended only for the initial database setup or for a
-full rebuild.
-
-It creates the database schemas and layer structures:
-
-- Staging tables
-- Bronze tables
-- Silver tables
-- Gold view
-
-Run:
+Start the infrastructure:
 
 ```powershell
-docker compose up db init-db
+docker compose up -d db
 ```
 
-Important:
+## Initialize Database
 
-`init-db` executes DDL scripts that may contain `DROP TABLE IF EXISTS`.
-It should therefore not be part of the normal incremental pipeline.
-
-Use it only when creating the database structure for the first time or when
-intentionally rebuilding the environment.
-
----
-
-## Run the Data Pipeline
-
-After the database structure has already been initialized, start the normal
-pipeline with:
+Run only for the first setup or a full rebuild:
 
 ```powershell
-docker compose up load-silver
+docker compose --profile setup run --rm init-db
 ```
 
-Docker Compose will start the required dependencies automatically:
+This creates the Staging, Bronze, Silver and Gold database layers.
+
+## Incremental Pipeline
+
+The recurring pipeline is orchestrated by Airflow:
 
 ```text
-db
-  ↓
-load-staging
-  ↓
-load-bronze
-  ↓
-load-silver
+load_incremental_batch
+        ↓
+load_bronze
+        ↓
+bronze_dq
+        ↓
+load_silver
+        ↓
+silver_dq + gold_dq
 ```
 
-Meaning:
+The incremental batch task downloads current NOAA data, filters observations newer than the latest Bronze date and loads them into Staging.
 
-```text
-db
-    Starts PostgreSQL.
+## Database Access
 
-load-staging
-    Loads the current raw CSV batch into Staging tables.
-
-load-bronze
-    Incrementally loads new records from Staging into Bronze.
-    Existing records are detected using natural keys.
-    Staging tables are cleared only after successful validation.
-
-load-silver
-    Incrementally loads transformed and cleaned records from Bronze into Silver.
-
-gold.poland_weather_observations
-    Provides an analysis-ready SQL view based on the current Silver data.
-```
-
-The Gold layer uses a regular SQL view, so there is no separate `load-gold`
-service required during normal pipeline execution.
-
-The Gold view definition is created during the first-time database setup.
-
----
-
-## Rebuild Docker Images
-
-If the Python image or dependencies have changed:
-
-```powershell
-docker compose build
-```
-
-or:
-
-```powershell
-docker compose up --build load-silver
-```
-
----
-
-## Run Individual Services
-
-Start only PostgreSQL:
-
-```powershell
-docker compose up db
-```
-
-Load only Staging:
-
-```powershell
-docker compose up load-staging
-```
-
-Run the Bronze load:
-
-```powershell
-docker compose up load-bronze
-```
-
-Run the Silver load:
-
-```powershell
-docker compose up load-silver
-```
-
-Dependencies defined in `compose.yaml` may cause required earlier services to
-start automatically.
-
----
-
-## Check Logs
-
-Check database initialization:
-
-```powershell
-docker compose logs init-db
-```
-
-Check Staging load:
-
-```powershell
-docker compose logs load-staging
-```
-
-Check Bronze load:
-
-```powershell
-docker compose logs load-bronze
-```
-
-Expected successful Bronze output includes:
-
-```text
-Bronze tables have been successfully updated.
-```
-
-Check Silver load:
-
-```powershell
-docker compose logs load-silver
-```
-
-Expected successful Silver output includes:
-
-```text
-Silver tables have been successfully updated.
-```
-
----
-
-## Validate Data
-
-Connect from the VS Code PostgreSQL extension:
+From Windows / VS Code:
 
 ```text
 Host: localhost
 Port: 5434
 Database: analytics_db
 User: postgres
-Password: admin
-SSL mode: Disable
 ```
 
-Run:
+Inside Docker Compose:
 
-```sql
-SELECT COUNT(*)
-FROM staging.weather;
-
-SELECT COUNT(*)
-FROM bronze.weather;
-
-SELECT COUNT(*)
-FROM bronze.stations;
-
-SELECT COUNT(*)
-FROM silver.weather;
-
-SELECT COUNT(*)
-FROM silver.stations;
-
-SELECT COUNT(*)
-FROM gold.poland_weather_observations;
+```text
+Host: db
+Port: 5432
 ```
 
-Preview the Gold analysis view:
-
-```sql
-SELECT *
-FROM gold.poland_weather_observations;
-```
-
-After a successful Bronze load, the Staging tables should normally be empty.
-
----
-
-## Stop the Project
+## Stop
 
 ```powershell
 docker compose down
 ```
 
-This stops and removes containers, but keeps the PostgreSQL data volume.
-
----
-
-## Notes
-
-The Docker pipeline uses the sample weather dataset and full stations dataset by default:
-
-```text
-00_raw_data/weather_sample.csv
-00_raw_data/stations.csv
-```
-
-The full NOAA dataset is used for local preparation, analysis, and benchmarking,
-but it is not loaded by default in the Docker workflow.
-
-The full dataset contains over 422 million weather observation rows.
-
-The Docker workflow is intended to provide a reproducible development and
-demonstration environment without requiring the full historical dataset.
+PostgreSQL data remains stored in the Docker volume.
