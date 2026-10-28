@@ -304,7 +304,7 @@ Current tasks:
 
 Data quality SQL uses PostgreSQL exception logic so that failed validation causes the corresponding Airflow task to fail automatically.
 
-![Weather Data Pipeline](../docs/weather_data_pipeline-graph.png)
+![Weather Data Pipeline](https://raw.githubusercontent.com/nerwuuus/data-toolkit/main/weather_data_processing/docs/weather_data_pipeline-graph.png)
 
 ---
 
