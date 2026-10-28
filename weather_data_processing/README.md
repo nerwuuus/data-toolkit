@@ -75,7 +75,6 @@ weather_data_processing/
 ├── docs/                            # Project documentation and pipeline diagrams
 ├── compose.yaml                     # Docker Compose configuration
 ├── requirements.txt                 # Shared Python dependencies
-├── .env                             # Local Docker environment variables, not committed to Git
 ├── .env.example                     # Example environment configuration
 ├── .dockerignore                    # Files excluded from Docker build context
 └── README.md
@@ -107,27 +106,38 @@ weather_data_processing/
 
 ```text
 NOAA GHCN-Daily (Weather & Stations)
-        |
-        v
-Incremental NOAA Weather & Stations processing
-        |
-        v
-Intermediate CSV batch
-        |
-        v
-Staging
-        |
-        v
-Bronze
-        |
-        v
-Silver
-        |
-        v
-Gold VIEW
-        |
-        v
-Data Quality Checks/Analysis
+              |
+              v
+    load_incremental_batch
+              |
+              v
+     Intermediate CSV batch
+              |
+              v
+       Staging (PostgreSQL)
+              |
+              v
+        load_bronze
+              |
+              v
+         Bronze
+              |
+              v
+        bronze_dq
+              |
+              v
+        load_silver
+              |
+              v
+          Silver
+              |
+        +-----+------+
+        |            |
+        v            v
+    silver_dq     gold_dq
+                     |
+                     v
+              Gold VIEW (read)
 ```
 
 The recurring pipeline is orchestrated with Airflow.
@@ -252,59 +262,9 @@ This prevents duplicate historical records from being inserted.
 
 ## Current Airflow Pipeline
 
-Airflow runs through Docker Compose.
+The current pipeline is orchestrated using Airflow, with incremental data loading, Bronze and Silver transformations, and automated data quality checks.
 
-The current DAG orchestrates the complete recurring incremental workflow:
-
-```text
-load_incremental_batch
-        |
-        v
-load_bronze
-        |
-        v
-bronze_dq
-        |
-        v
-load_silver
-        |
-        +--> silver_dq
-        |
-        +--> gold_dq
-```
-
-Current tasks:
-
-- `load_incremental_batch`
-  - uses `BashOperator`
-  - runs `/app/01_scripts/13_process_noaa_incremental_batch.py`
-  - retrieves the latest Bronze watermark
-  - downloads and prepares NOAA weather and station data
-  - filters the new weather observations
-  - loads the current batch into Staging using PostgreSQL `COPY`
-
-- `load_bronze`
-  - uses `SQLExecuteQueryOperator`
-  - executes the PostgreSQL `load_bronze()` procedure
-  - loads new Staging records into Bronze
-
-- `bronze_dq`
-  - runs automated Bronze data quality validation before Silver processing
-
-- `load_silver`
-  - uses `SQLExecuteQueryOperator`
-  - executes the PostgreSQL `load_silver()` procedure
-  - transforms and loads new Bronze records into Silver
-
-- `silver_dq`
-  - runs automated Silver data quality validation
-
-- `gold_dq`
-  - runs automated Gold data quality validation
-
-Data quality SQL uses PostgreSQL exception logic so that failed validation causes the corresponding Airflow task to fail automatically.
-
-![Weather Data Pipeline](../docs/weather_data_pipeline-graph.png)
+For more detailed information about the pipeline architecture, DAG task dependencies, execution flow and data quality validation, see the [Airflow README](./06_airflow/README.md).
 
 ---
 
@@ -378,6 +338,7 @@ If a validation condition is detected, PostgreSQL raises an exception and the co
 
 ---
 
+
 ## Docker Workflow
 
 Docker Compose is used to run the local PostgreSQL and Airflow environment.
@@ -414,6 +375,14 @@ The weather PostgreSQL database and the Airflow metadata database run in separat
 
 ---
 
+## Running the Docker Environment
+
+The project uses Docker Compose to manage and run the containerized environment.
+
+For detailed instructions on starting, rebuilding, monitoring, troubleshooting and stopping Docker services, see the [Docker Runbook](./docs/docker_runbook.md).
+
+---
+
 ## Custom Airflow Image
 
 Airflow uses its own Docker image and Python runtime.
@@ -432,7 +401,7 @@ For this reason, the project uses a custom Airflow Docker image based on:
 apache/airflow:3.3.2
 ```
 
-The custom image installs the project dependencies from `requirements.txt`, keeping packages such as Polars, Pandas, SQLAlchemy, pg8000, psycopg2-binary, and python-dotenv available to Airflow tasks.
+The custom image installs the project dependencies from `requirements.txt`.
 
 The Docker and Docker Airflow environment were developed with AI assistance and manually tested during project development.
 
@@ -510,40 +479,6 @@ Sensitive local values are stored in `.env` and are not committed to Git.
 
 ---
 
-## Running the Docker Environment
-
-Start the Dockerized environment:
-
-```powershell
-docker compose up -d
-```
-
-Rebuild containers after dependency or Dockerfile changes:
-
-```powershell
-docker compose up -d --build
-```
-
-Check service status:
-
-```powershell
-docker compose ps -a
-```
-
-Check logs for a service:
-
-```powershell
-docker compose logs <service>
-```
-
-Stop the environment:
-
-```powershell
-docker compose down
-```
-
----
-
 ## Running Airflow
 
 The Airflow UI is available locally at:
@@ -576,45 +511,30 @@ Local Jupyter notebooks use the same host connection, while scripts running insi
 
 ---
 
+
 ## Benchmarks
 
-The project includes performance comparisons of:
+The project includes performance comparisons of CSV vs Parquet and Pandas vs Polars, focusing on read/write performance, storage efficiency and large-scale data processing.
 
-- CSV vs Parquet
-- Pandas vs Polars
-- Read performance
-- Write performance
-- Storage efficiency
-- Large-scale lazy processing
+Benchmarks were performed using the historical NOAA dataset containing over 422 million observations.
 
-The benchmarks were originally performed using the historical NOAA dataset containing approximately 422 million observations.
+For detailed results and implementation, see:
+
+- [Pandas vs Polars Benchmark](./01_scripts/3e_pandas_vs_polars_benchmark.ipynb)
+- [CSV vs Parquet Benchmark](./01_scripts/3d_csv_vs_parquet_benchmark.ipynb)
+
 
 ---
 
-## PostgreSQL Performance Experiments
 
-The project includes PostgreSQL performance experiments related to:
+## PostgreSQL Optimisation
 
-- incremental loading
-- indexing
-- unique constraints
-- query execution plans
-- large historical loads
-- bootstrap vs incremental processing
+The project includes PostgreSQL performance experiments covering indexing, query execution plans, unique constraints and historical vs incremental loading strategies.
 
-Index tests showed that indexes are useful only when the filter is selective enough.
+The experiments demonstrated how query selectivity affects index usage and why large historical loads may require a different approach from recurring incremental batches.
 
-For example, filtering a broad one-year range still resulted in a `Parallel Seq Scan`, while a narrower one-month range used the `observation_date` index.
+For more details, see the [PostgreSQL Optimisation](./05_postgres_optimisation/) directory.
 
-This demonstrated that adding an index does not automatically improve every query and that PostgreSQL chooses plans based on estimated cost and selectivity.
-
-A second important lesson came from the historical load:
-
-```text
-Historical bootstrap and recurring incremental loading should not always use the same loading strategy.
-```
-
-Incremental duplicate protection is appropriate for recurring batches but can become expensive when applied to hundreds of millions of historical records.
 
 ---
 

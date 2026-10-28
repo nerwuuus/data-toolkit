@@ -37,20 +37,16 @@ Data Source:
 */
 
 SELECT *
-FROM silver.weather
+FROM gold.poland_weather_observations
 LIMIT 10;
-
-SELECT *
-FROM silver.stations
-LIMIT 10;
-
 
 SELECT
     station,
     observation_date,
     SUM(value) OVER (PARTITION BY station) total_prcp
-FROM silver.weather
+FROM gold.poland_weather_observations
 WHERE metric = 'PRCP'
+
 
 
 

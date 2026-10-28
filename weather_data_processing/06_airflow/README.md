@@ -4,6 +4,42 @@ The current DAG orchestrates the incremental weather data pipeline:
 
 `load_incremental_batch -> load_bronze -> bronze_dq -> load_silver -> [silver_dq, gold_dq]`
 
+```text
+NOAA GHCN-Daily (Weather & Stations)
+              |
+              v
+    load_incremental_batch
+              |
+              v
+     Intermediate CSV batch
+              |
+              v
+       Staging (PostgreSQL)
+              |
+              v
+        load_bronze
+              |
+              v
+         Bronze
+              |
+              v
+        bronze_dq
+              |
+              v
+        load_silver
+              |
+              v
+          Silver
+              |
+        +-----+------+
+        |            |
+        v            v
+    silver_dq     gold_dq
+                     |
+                     v
+              Gold VIEW (read)
+```
+
 - `load_incremental_batch`
   - uses `BashOperator`
   - runs `/app/01_scripts/13_process_noaa_incremental_batch.py`
@@ -56,7 +92,7 @@ In practice:
 - Containers connect to PostgreSQL internally using `db:5432`.
 - Local tools such as VS Code and Jupyter access the same PostgreSQL container through `localhost:5434`.
 
-## Staging / TRUNCATE
+## Staging/TRUNCATE
 
 The incremental NOAA processing script truncates:
 
