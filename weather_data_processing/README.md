@@ -416,23 +416,23 @@ The weather PostgreSQL database and the Airflow metadata database run in separat
 
 ## Custom Airflow Image
 
-Airflow uses its own Docker image and Python runtime.
+Airflow runs in its own Docker containers with a separate Python environment from the project's app service.
 
-Mounting the project repository into Airflow containers with:
+The project repository is mounted into the Airflow containers using:
 
 ```text
 .:/app
 ```
 
-makes the project files available inside Airflow, but it does not automatically provide Python packages installed in the separate `app` image.
+This makes the project files accessible inside the containers. However, mounting a directory does not make Python dependencies installed in the app image available to Airflow.
 
-For this reason, the project uses a custom Airflow Docker image based on:
+To ensure that Airflow has access to all required dependencies, the project uses a custom Docker image based on:
 
 ```text
 apache/airflow:3.3.2
 ```
 
-The custom image installs the project dependencies from `requirements.txt`, keeping packages such as Polars, Pandas, SQLAlchemy, pg8000, psycopg2-binary, and python-dotenv available to Airflow tasks.
+The custom image includes the Python packages required to execute the project's data pipelines.
 
 The Docker and Docker Airflow environment were developed with AI assistance and manually tested during project development.
 
@@ -466,7 +466,6 @@ Docker bind mount
 /app/01_scripts/13_process_noaa_incremental_batch.py
 ```
 
-This makes it possible to reuse existing ETL scripts instead of rewriting them directly inside DAG files.
 
 ---
 
