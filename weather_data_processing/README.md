@@ -264,27 +264,9 @@ This prevents duplicate historical records from being inserted.
 
 The current pipeline is orchestrated using Airflow, with incremental data loading, Bronze and Silver transformations, and automated data quality checks.
 
-<<<<<<< HEAD
 For more detailed information about the pipeline architecture, DAG task dependencies, execution flow and data quality validation, see the [Airflow README](./06_airflow/README.md).
-=======
-The current DAG orchestrates the complete recurring incremental workflow:
 
-```text
-load_incremental_batch
-        |
-        v
-load_bronze
-        |
-        v
-bronze_dq
-        |
-        v
-load_silver
-        |
-        +--> silver_dq
-        |
-        +--> gold_dq
-```
+---
 
 Current tasks:
 
@@ -318,7 +300,6 @@ Current tasks:
 Data quality SQL uses PostgreSQL exception logic so that failed validation causes the corresponding Airflow task to fail automatically.
 
 ![Weather Data Pipeline](https://raw.githubusercontent.com/nerwuuus/data-toolkit/main/weather_data_processing/docs/weather_data_pipeline-graph.png)
->>>>>>> d953776f9c21de836ed928eb8d3e935571a265cf
 
 ---
 
@@ -455,11 +436,7 @@ To ensure that Airflow has access to all required dependencies, the project uses
 apache/airflow:3.3.2
 ```
 
-<<<<<<< HEAD
 The custom image installs the project dependencies from `requirements.txt`.
-=======
-The custom image includes the Python packages required to execute the project's data pipelines.
->>>>>>> d953776f9c21de836ed928eb8d3e935571a265cf
 
 The Docker and Docker Airflow environment were developed with AI assistance and manually tested during project development.
 
