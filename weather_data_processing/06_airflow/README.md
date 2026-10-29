@@ -42,7 +42,7 @@ NOAA GHCN-Daily (Weather & Stations)
 
 - `load_incremental_batch`
   - uses `BashOperator`
-  - runs `/app/01_scripts/13_process_noaa_incremental_batch.py`
+  - runs `/app/01_scripts/12_process_noaa_incremental_batch.py`
   - fetches the latest observation date from Bronze
   - downloads the current NOAA weather dataset and station metadata
   - filters weather observations newer than the current Bronze watermark

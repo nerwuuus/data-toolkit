@@ -222,7 +222,7 @@ Because Gold is a normal VIEW, it automatically reflects current Silver data and
 
 The recurring source-processing step is implemented in:
 
-`01_scripts/13_process_noaa_incremental_batch.py`
+`01_scripts/12_process_noaa_incremental_batch.py`
 
 The script:
 
@@ -272,7 +272,7 @@ Current tasks:
 
 - `load_incremental_batch`
   - uses `BashOperator`
-  - runs `/app/01_scripts/13_process_noaa_incremental_batch.py`
+  - runs `/app/01_scripts/12_process_noaa_incremental_batch.py`
   - retrieves the latest Bronze watermark
   - downloads and prepares NOAA weather and station data
   - filters the new weather observations
@@ -307,7 +307,7 @@ Data quality SQL uses PostgreSQL exception logic so that failed validation cause
 
 Staging represents only the current incoming batch.
 
-During recurring incremental runs, `13_process_noaa_incremental_batch.py` truncates and reloads:
+During recurring incremental runs, `12_process_noaa_incremental_batch.py` truncates and reloads:
 
 - `staging.stations`
 - `staging.weather`
@@ -467,7 +467,7 @@ Windows/host repository
 Docker bind mount
         |
         v
-/app/01_scripts/13_process_noaa_incremental_batch.py
+/app/01_scripts/12_process_noaa_incremental_batch.py
 ```
 
 

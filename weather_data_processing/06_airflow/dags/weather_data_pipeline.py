@@ -31,7 +31,7 @@ with DAG(
     
     load_incremental_batch = BashOperator(
         task_id='load_incremental_batch',
-        bash_command='python /app/01_scripts/13_process_noaa_incremental_batch.py'
+        bash_command='python /app/01_scripts/12_process_noaa_incremental_batch.py'
     )
 
     # Load new records from Staging into the Bronze layer
