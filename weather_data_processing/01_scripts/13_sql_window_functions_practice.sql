@@ -4,14 +4,7 @@ SQL Practice Script: Window Functions
 ==============================================================================
 Script Purpose:
     This script is intended for practicing SQL window functions on the weather
-    dataset.
-
-    Window functions are used to calculate values across related rows without
-    collapsing the result set like GROUP BY does. They are useful for rankings,
-    running totals, moving averages, comparisons with previous rows, and
-    station-level or time-based analysis.
-
-    This script should be used to practice:
+    dataset, like:
         - ROW_NUMBER(),
         - RANK() and DENSE_RANK(),
         - LAG() and LEAD(),
@@ -30,22 +23,21 @@ Example Use Cases:
 Data Source:
     The exercises should use analysis-ready data from the Gold layer, especially:
 
-        gold.weather_observations
+        gold.poland_weather_observations
 
     or another validated analytical table/view created from the Silver layer.
 ==============================================================================
 */
 
-SELECT *
-FROM gold.poland_weather_observations
-LIMIT 10;
-
 SELECT
     station,
     observation_date,
-    SUM(value) OVER (PARTITION BY station) total_prcp
+    SUM(value) OVER (PARTITION BY station ORDER BY observation_date) total_prcp
 FROM gold.poland_weather_observations
 WHERE metric = 'PRCP'
+ORDER BY total_prcp DESC
+
+
 
 
 
