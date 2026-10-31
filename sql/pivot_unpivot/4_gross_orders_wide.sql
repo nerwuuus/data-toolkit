@@ -17,13 +17,28 @@ WITH t AS (
         product_id
 ),
 t2 AS (
-    SELECT isoyear, isoweek, product, 'non_promo_price' AS metric, non_promo_price AS value
+    SELECT 
+        isoyear, 
+        isoweek, 
+        product, 
+        'non_promo_price' AS metric, 
+        non_promo_price AS value
     FROM t
     UNION ALL
-    SELECT isoyear, isoweek, product, 'gross_orders_value' AS metric, gross_orders_value AS value
+    SELECT
+        isoyear, 
+        isoweek, 
+        product, 
+        'gross_orders_value' AS metric, 
+        gross_orders_value AS value
     FROM t
     UNION ALL
-    SELECT isoyear, isoweek, product, 'gross_orders' AS metric, gross_orders AS value
+    SELECT
+        isoyear, 
+        isoweek, 
+        product, 
+        'gross_orders' AS metric, 
+        gross_orders AS value
     FROM t
 ),
 t3 AS (
