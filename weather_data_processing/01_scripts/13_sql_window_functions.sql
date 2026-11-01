@@ -30,7 +30,7 @@ Data Source:
 */
 
 -- Identify the top 3 weather stations with the highest annual precipitation
--- for each year
+-- for each year.
 WITH annual_prcp_ranking AS (
     SELECT
         station_name,
@@ -56,7 +56,7 @@ ORDER BY
 
 
 -- Identify the top 3 weather stations with the highest cumulative snow depth
--- for each year
+-- for each year.
 WITH annual_snwd_ranking AS (
     SELECT
         station_name,
@@ -85,7 +85,7 @@ ORDER BY
 
 
 -- Identify the top 3 weather stations with the highest number of days
--- with snow cover (SNWD > 0) for each year 
+-- with snow cover (SNWD > 0) for each year.
 WITH annual_snow_cover_ranking AS (
     SELECT
         station_name,
@@ -147,18 +147,59 @@ SELECT
         ORDER BY observation_date
     ) AS next_temp
 FROM gold.poland_weather_observations
-WHERE metric = 'TMAX';
+WHERE metric = 'TMAX'
+ORDER BY 
+    station_name DESC,
+    observation_date;
 
 
 
--- TODO 4: Find the 3 warmest days for each station in 2025
--- using ROW_NUMBER() and a CTE.
+-- Find the 3 warmest days for each station in 2025
+WITH top3_warmest_2025 AS (
+    SELECT
+        station_name,
+        observation_date,
+        value,
+        ROW_NUMBER() OVER(
+            PARTITION BY station_name
+            ORDER BY value DESC, observation_date ASC
+        ) AS rank_stations
+    FROM gold.poland_weather_observations
+    WHERE 
+        metric = 'TMAX'
+        AND EXTRACT(YEAR FROM observation_date) = 2025
+)
+SELECT *
+FROM top3_warmest_2025
+WHERE rank_stations <= 3;
+
+
 
 -- TODO 5: Rank the warmest days for each station using DENSE_RANK()
 -- and compare the results with RANK() when temperatures are equal.
 
+
+
+
+
 -- TODO 6: Count available temperature observations for each station
 -- in 2025 using COUNT() OVER(), while preserving daily records.
+SELECT
+    station_name,
+    observation_date,
+    COUNT(*) OVER(
+        PARTITION BY station_name
+    )
+FROM gold.poland_weather_observations
+WHERE 
+    metric IN (
+        'TMAX', 'TMIN', 'TAVG'
+    )
+    AND EXTRACT(YEAR FROM observation_date) = '2025'
+ORDER BY 
+    station_name,
+    observation_date;
+
 
 -- TODO 7: Calculate cumulative precipitation (PRCP) for each station
 -- throughout 2025 using SUM() and UNBOUNDED PRECEDING.
