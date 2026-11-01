@@ -175,21 +175,18 @@ WHERE rank_stations <= 3;
 
 
 
--- TODO 5: Rank the warmest days for each station using DENSE_RANK()
--- and compare the results with RANK() when temperatures are equal.
-
-
-
-
-
--- TODO 6: Count available temperature observations for each station
--- in 2025 using COUNT() OVER(), while preserving daily records.
+-- Show only temperature observations for each station in 2025,
+-- including daily and annual observation counts while preserving individual records.
 SELECT
     station_name,
     observation_date,
+    metric,
+    COUNT(*) OVER(
+        PARTITION BY station_name, observation_date
+    ) AS daily_available_metric_count,
     COUNT(*) OVER(
         PARTITION BY station_name
-    )
+    ) AS station_annual_metric_count
 FROM gold.poland_weather_observations
 WHERE 
     metric IN (
@@ -201,13 +198,47 @@ ORDER BY
     observation_date;
 
 
--- TODO 7: Calculate cumulative precipitation (PRCP) for each station
--- throughout 2025 using SUM() and UNBOUNDED PRECEDING.
+-- Calculate cumulative precipitation for each station throughout 2025,
+-- considering only days with positive precipitation and preserving daily records.
+SELECT
+    station_name,
+    observation_date,
+    value,
+    SUM(value) OVER(
+        PARTITION BY station_name
+        ORDER BY observation_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS sum_of_precipitation
+FROM gold.poland_weather_observations
+WHERE 
+    metric = 'PRCP'
+    AND value > 0
+    AND EXTRACT(YEAR FROM observation_date) = '2025';
+
+
+
+-- TODO 8: Find the top 3 weather stations with the highest average temperature (TAVG)
+-- for each month in 2025. Return year, month, station, average temperature, and rank.
 
 
 
 
 
+
+-- TODO 9: Find the 3 largest daily temperature increases (TMAX) for each station
+-- in 2025 compared to the previous calendar day.
+-- Exclude observations without a valid previous-day measurement.
+-- Return station, date, current temperature, previous temperature, difference, and rank.
+
+
+
+
+
+
+-- TODO 10: Detect heatwaves for each weather station using TMAX observations.
+-- Identify periods of at least 3 consecutive calendar days with TMAX >= 30°C.
+-- Missing dates or temperatures below 30°C must break the consecutive sequence.
+-- Return station, heatwave start date, end date, and duration in days.
 
 
 
