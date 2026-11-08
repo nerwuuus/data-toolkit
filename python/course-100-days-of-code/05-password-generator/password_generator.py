@@ -20,8 +20,9 @@ for symbol in range(0, nr_symbols):
 for number in range(0, nr_numbers):
     password += random.choice(numbers)
 
-# randomise the generated password
-# Python interprets password as string and won't allow to shuffle it. Convert it to a list
+# Randomise the generated password
+# Python interprets password as string and won't allow to shuffle it. Strings are immutable! 
+# An empty separator ('') joins all elements into a single string without adding anything between them.
 password = list(password)
 random.shuffle(password)
 result = ''.join(password)
