@@ -34,6 +34,7 @@ while not game_over:
         if letter == guess:
             display += letter
             correct_letters.append(guess)
+        # Keep previously guessed correct letters visible in the word.
         elif letter in correct_letters:
             display += letter
         else:
