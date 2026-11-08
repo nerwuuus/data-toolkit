@@ -219,18 +219,56 @@ WHERE
 
 -- TODO 8: Find the top 3 weather stations with the highest average temperature (TAVG)
 -- for each month in 2025. Return year, month, station, average temperature, and rank.
-
-
-
-
-
+WITH t AS ( 
+    SELECT
+        station_name,
+        EXTRACT(MONTH FROM observation_date) AS month,
+        AVG(value) AS monthly_avg
+    FROM gold.poland_weather_observations
+    WHERE 
+        metric = 'TAVG'
+        AND EXTRACT(YEAR FROM observation_date) = 2025
+    GROUP BY 
+        station_name,
+        EXTRACT(MONTH FROM observation_date)
+    ORDER BY
+        station_name,
+        month,
+        monthly_avg DESC
+), top3_tavg_2025 AS (
+    SELECT 
+        *,
+        RANK() OVER(
+        PARTITION BY month
+        ORDER BY monthly_avg
+        ) AS station_rank
+    FROM t
+    ORDER BY
+        station_name,
+        month,
+        monthly_avg DESC,
+        station_rank
+)
+SELECT *
+FROM top3_tavg_2025
+-- WHERE station_rank <= 3
+-- ORDER BY station_rank;
 
 -- TODO 9: Find the 3 largest daily temperature increases (TMAX) for each station
 -- in 2025 compared to the previous calendar day.
 -- Exclude observations without a valid previous-day measurement.
 -- Return station, date, current temperature, previous temperature, difference, and rank.
-
-
+SELECT 
+    station_name,
+    value,
+    RANK() OVER(
+    PARTITION BY EXTRACT(MONTH FROM observation_date)
+    ORDER BY AVG(value)
+    ) AS station_rank
+FROM gold.poland_weather_observations
+WHERE 
+    metric = 'TAVG'
+    AND EXTRACT(YEAR FROM observation_date) = 2025
 
 
 
