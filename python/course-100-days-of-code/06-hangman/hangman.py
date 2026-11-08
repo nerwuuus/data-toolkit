@@ -2,12 +2,12 @@ import random
 
 # use the 'word_list' from hangman_words.py
 from hangman_words import word_list
-lives = 6
 
 # print logo at the start of the game.
 from hangman_art import logo
-# can be also from hangman_art import logo, stages
 print(logo)
+
+lives = 6
 
 chosen_word = random.choice(word_list)
 print(chosen_word)
