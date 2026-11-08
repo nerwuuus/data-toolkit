@@ -50,7 +50,7 @@ if user_choice >= 3 or user_choice < 0:
 elif user_choice == 0 and computer_choice == 2:
     print("You win!")
 elif computer_choice == 0 and user_choice == 2:
-    print("You win!")
+    print("You lose!")
 elif computer_choice > user_choice:
     print("You lose!")
 elif user_choice > computer_choice:
