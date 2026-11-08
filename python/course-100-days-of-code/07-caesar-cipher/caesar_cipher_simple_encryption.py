@@ -7,15 +7,15 @@ text = input("Type your message:\n").lower()
 shift = int(input("Type the shift number:\n"))
 
 # define a new function
-def encode(plain_text, shift_amount):
+def encode(text, shift):
     result = ''
   
-    for letter in plain_text:
-        shifted_index = ((alphabet.index(letter) + shift_amount) % 26) # 26 letters in the alphabet, keeps the range 0 - 25 and prevents from the out of range error
+    for letter in text:
+        shifted_index = ((alphabet.index(letter) + shift) % 26) # 26 letters in the alphabet, keeps the range 0 - 25 and prevents from the out of range error
         shifted_letter = alphabet[shifted_index]
         result += shifted_letter
       
     print(f'Here is your encoded message: {result}')
 
 # call a function (in this case it returns 'ifmmp')
-encode(plain_text=text, shift_amount=shift) 
+encode(text, shift) 
