@@ -252,6 +252,9 @@ ORDER BY
     month,
     station_rank;
 
+
+
+
 -- TODO 9: Find the 3 largest daily temperature increases (TMAX) for each station
 -- in 2025 compared to the previous calendar day.
 -- Exclude observations without a valid previous-day measurement.
@@ -275,8 +278,6 @@ WHERE
 -- Identify periods of at least 3 consecutive calendar days with TMAX >= 30°C.
 -- Missing dates or temperatures below 30°C must break the consecutive sequence.
 -- Return station, heatwave start date, end date, and duration in days.
-
-
 
 
 
