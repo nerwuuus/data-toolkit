@@ -27,6 +27,8 @@ cappuccino = {
     'coffee': 14
 }
 
-# user_order = {
-#     'user_choice': 
-# }
+recipes = {
+    'espresso': espresso,
+    'latte': latte,
+    'cappuccino': cappuccino
+}
