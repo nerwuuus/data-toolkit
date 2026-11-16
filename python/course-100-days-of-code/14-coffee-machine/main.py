@@ -3,8 +3,6 @@ import coffee_data
 
 coffee_machine_is_on = True
 profit = 0
-order = []
-
 
 def is_resource_sufficient(order_ingredients):
     """Returns True when order can be made, False if ingredients are insufficient."""
@@ -63,3 +61,4 @@ while coffee_machine_is_on:
             payment = process_coins()
             if is_transaction_successfull(payment, drink['cost']):
                 make_coffee(choice, drink['ingredients'])
+
