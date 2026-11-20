@@ -12,9 +12,9 @@ from data import question_data
 # Create a Question object from each entry in question_data
 # Append each Question object to the question_bank.
 
-question = Question(text, answer)
+question_bank = []
 
-for question in question_data:
-     question_data.text
-     question_data.answer
-
+for question_data_item in question_data:
+     question_text = question_data_item['text'].question_bank.append(question_text)
+     question_answer = question_data_item['answer'].question_bank.append(question_answer)
+     question = Question(question_text, question_answer)
