@@ -1,20 +1,25 @@
-# TODO
-# 1. Asking the questions
-# 2. Checking if the answer was correct
-# 3. Checking if we're at the end of the quiz
-# =====================================================================
-# question_number var will go through the list of questions which will be 
-# passed over to QuizBrain object when it gets initalised. question_bank list will be passed to 
-# question_list variable in quiz_brain file.
-
-# next_question() method will pull up the question from that list, depending
-# on which current question number we're on. It should be displayed like:
-# Q.1: {text} {answer}: user input
-
 class QuizBrain:
 
     def __init__(self, q_list):
+        self.score = 0
         self.question_number = 0
         self.question_list = q_list
 
+    def still_has_questions(self):
+        return self.question_number < len(self.question_list)
 
+    def next_question(self):
+        current_question = self.question_list[self.question_number]
+        self.question_number += 1
+        user_answer = input(f'Q.{self.question_number}: {current_question.text} (True/False): ')
+
+        self.check_answer(user_answer, current_question.answer)
+
+    def check_answer(self, user_answer, correct_answer):
+        if user_answer.lower() == correct_answer.lower():
+            print('You got it right!')
+            self.score += 1
+            print(f'Your current score is {self.score}')
+        else:
+            print("That's wrong!")
+        print(f'The correct answer was: {correct_answer}')    
