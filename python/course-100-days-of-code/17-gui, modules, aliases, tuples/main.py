@@ -1,3 +1,16 @@
-my_tuple = (1, 3, 8)
-my_tuple[1]
+import colorgram
+
+# Extract 10 colors from an image.
+colors = colorgram.extract('17-gui, modules, aliases, tuples/hirst.jpg', 30)
+
+rgb_colors = []
+
+for color in colors:
+    r = color.rgb.r
+    g = color.rgb.g
+    b = color.rgb.b
+    new_color = (r, g, b)
+    rgb_colors.append(new_color)
+
+print(rgb_colors)
 
